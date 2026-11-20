@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-AO">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        var routes = [
+          "/sobre",
+          "/servicos",
+          "/produtos",
+          "/portfolio",
+          "/noticias",
+          "/carreiras",
+          "/contactos",
+        ];
+        var path = window.location.pathname;
+        if (routes.indexOf(path) !== -1) {
+          window.location.replace(path + "/" + window.location.search + window.location.hash);
+        }
+      })();
+    </script>
+    <meta name="theme-color" content="#faf9f7" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
+    <meta
+      name="description"
+      content="Conheça a Softhard, empresa de marketing corporativo e estratégia digital em Angola. Explore serviços, produtos, portfólio, actividades e oportunidades."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Softhard" />
+    <meta property="og:locale" content="pt_AO" />
+    <meta
+      property="og:title"
+      content="Softhard | Marketing corporativo e estratégia digital em Angola"
+    />
+    <meta
+      property="og:description"
+      content="Marketing corporativo e estratégia digital para organizações em Angola. Conheça os serviços, produtos, portfólio e actividades da Softhard."
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="Softhard | Marketing corporativo e estratégia digital em Angola"
+    />
+    <meta
+      name="twitter:description"
+      content="Marketing corporativo e estratégia digital para organizações em Angola. Conheça os serviços, produtos, portfólio e actividades da Softhard."
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Softhard",
+        "description": "Empresa de marketing corporativo e estratégia digital em Angola.",
+        "email": "softhard@dcinvestimentos.com",
+        "telephone": ["+244 932 799 790", "+244 956 007 537"],
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Av. Lenine, Maianga, Ingombotas",
+          "addressCountry": "AO"
+        },
+        "sameAs": ["https://www.instagram.com/softhard_ao/"]
+      }
+    </script>
+    <title>Softhard | Marketing corporativo e estratégia digital em Angola</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
