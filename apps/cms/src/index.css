@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --color-primary: oklch(0.53 0.22 29);
+  --color-primary-foreground: white;
+  --color-brand-red: oklch(0.53 0.22 29);
+  --color-brand-orange: oklch(0.66 0.17 43);
+}
+
+@layer base {
+  body {
+    @apply text-zinc-900 antialiased;
+    background: oklch(0.995 0 0);
+  }
+}
+
+:root {
+  --cms-red: oklch(0.53 0.22 29);
+  --cms-red-hover: oklch(0.48 0.22 29);
+  --cms-orange: oklch(0.66 0.17 43);
+}
+
+.cms-primary {
+  background-color: var(--cms-red) !important;
+  color: white !important;
+}
+
+.cms-primary:hover {
+  background-color: var(--cms-red-hover) !important;
+}
+
+.cms-nav-active {
+  background-color: var(--cms-red) !important;
+  color: white !important;
+  box-shadow: 0 8px 18px color-mix(in oklch, var(--cms-red) 18%, transparent) !important;
+}
+
+.cms-logo {
+  width: 144px;
+  height: 44px;
+  object-fit: cover;
+  object-position: center 50%;
+}
+
+.cms-logo-login {
+  width: 210px;
+  height: 64px;
+  object-fit: cover;
+  object-position: center 50%;
+}

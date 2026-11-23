@@ -1,4 +1,5 @@
-import {
+﻿import {
+  ArrowDown,
   ArrowRight,
   ArrowUpRight,
   ChevronDown,
@@ -7,85 +8,145 @@ import {
   Compass,
   Cpu,
   Lightbulb,
-  Megaphone,
   MoveHorizontal,
-  Package,
+  Play,
+  Clock3,
 } from "lucide-react";
 import {
   useRef,
+  useEffect,
   useState,
+  type FormEvent,
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
 } from "react";
 import type { PageRoute } from "./routes";
+import { getPublicPosts, submitLead } from "./lib/api";
 
-const portfolioItems = [
+export const portfolioItems = [
   {
+    slug: "acqua-eta",
     title: "Acqua ETA",
     category: "Projecto em destaque",
     image: "/acqua-eta.jpg",
     alt: "Equipa de profissionais junto à instalação da ETA Sudeste",
+    summary:
+      "Um registo visual de uma equipa de profissionais junto à instalação da ETA Sudeste.",
+    story:
+      "Este destaque apresenta um contexto de trabalho no terreno e aproxima quem visita o portfólio das pessoas e da instalação retratada.",
+    focusItems: ["ETA Sudeste", "Equipa no terreno", "Registo de projecto"],
   },
   {
+    slug: "visita-de-campo",
     title: "Visita de campo",
     category: "Tecnologia no terreno",
     image: "/softhard-field.jpg",
     alt: "Profissionais numa visita de campo a uma instalação industrial",
+    summary:
+      "Profissionais numa visita de campo a uma instalação industrial.",
+    story:
+      "A imagem dá destaque à presença no terreno e ao contacto com um ambiente industrial, reforçando a dimensão prática deste registo.",
+    focusItems: ["Ambiente industrial", "Presença no terreno", "Tecnologia"],
   },
   {
+    slug: "corrida-odebrecht",
     title: "Corrida Odebrecht",
     category: "Evento",
     image: "/odebrecht-corrida.jpg",
     alt: "Participantes junto ao arco de partida da corrida Odebrecht",
+    summary:
+      "Participantes reunidos junto ao arco de partida da corrida Odebrecht.",
+    story:
+      "Este registo destaca o momento de partida e a participação colectiva numa actividade apresentada no portfólio Softhard.",
+    focusItems: ["Evento", "Participação", "Experiência colectiva"],
   },
 ];
 
 export const serviceItems = [
   {
-    category: "ESTRATÉGIA",
+    slug: "estrategia-digital",
+    category: "ESTRAT?GIA",
     title: "Estratégia digital",
     description:
       "Planeamento orientado por objectivos para aproximar marcas, pessoas e canais digitais.",
     image: "/softhard-field.jpg",
+    detail:
+      "Definimos prioridades digitais a partir do contexto, dos objectivos e das pessoas que cada organização pretende alcançar.",
+    supportItems: [
+      "Clarificação de objectivos e públicos",
+      "Planeamento de canais e conteúdos",
+      "Critérios para acompanhar a evolução",
+    ],
   },
   {
+    slug: "marketing-corporativo",
     category: "MARKETING",
     title: "Marketing corporativo",
     description:
       "Comunicação integrada para reforçar a presença, a mensagem e a reputação da sua organização.",
     image: "/odebrecht-corrida.jpg",
+    detail:
+      "Apoiamos organizações a alinhar posicionamento, mensagens e pontos de contacto para comunicar com consistência.",
+    supportItems: [
+      "Posicionamento e mensagens institucionais",
+      "Comunicação interna e externa",
+      "Planeamento de iniciativas de marca",
+    ],
   },
   {
+    slug: "conteudo-e-criatividade",
     category: "CRIATIVIDADE",
     title: "Conteúdo e criatividade",
     description:
       "Ideias e conteúdos consistentes com a identidade e os objectivos de cada marca.",
     image: "/acqua-eta.jpg",
+    detail:
+      "Transformamos a estratégia da marca em ideias e conteúdos claros, relevantes para os canais e públicos definidos.",
+    supportItems: [
+      "Desenvolvimento de conceitos criativos",
+      "Planeamento de conteúdos",
+      "Adaptação de mensagens aos canais",
+    ],
   },
   {
+    slug: "solucoes-tecnologicas",
     category: "TECNOLOGIA",
     title: "Soluções tecnológicas",
     description:
       "Ferramentas e experiências digitais pensadas para responder a necessidades reais.",
     image: "/softhard-field.jpg",
+    detail:
+      "Exploramos soluções digitais alinhadas com os processos e as necessidades concretas de cada organização.",
+    supportItems: [
+      "Levantamento de necessidades",
+      "Enquadramento de soluções digitais",
+      "Integração da tecnologia na experiência",
+    ],
   },
 ];
 
-const blogCategories = [
-  "Todos",
-  "Estratégia digital",
-  "Marketing corporativo",
-  "Experiências",
-] as const;
+type BlogArticle = {
+  id?: string;
+  category: string;
+  title: string;
+  excerpt: string;
+  image: string;
+  imageAlt: string;
+  mediaUrl?: string;
+  publishedAt?: string | null;
+  images?: { src: string; alt: string }[];
+  paragraphs: string[];
+};
 
-const blogPosts = [
+const blogPosts: BlogArticle[] = [
   {
     category: "Estratégia digital",
     title: "A estratégia digital começa antes da escolha dos canais",
     excerpt:
       "Mais do que estar presente em várias plataformas, importa saber o que a organização pretende alcançar.",
     image: "/softhard-field.jpg",
+    mediaUrl: "/softhard-blogue.mp4",
     imageAlt: "Profissionais numa visita de campo a uma instalação industrial",
     paragraphs: [
       "Uma estratégia digital útil começa com objectivos claros, conhecimento das pessoas a quem queremos chegar e uma compreensão realista dos recursos disponíveis.",
@@ -160,14 +221,135 @@ function PageLink({
   );
 }
 
+export function ProductSpotlight({
+  href,
+  actionLabel,
+}: {
+  href: string;
+  actionLabel: string;
+}) {
+  return (
+    <article className="product-spotlight" data-reveal>
+      <div aria-hidden="true" className="product-spotlight-art">
+        <span className="product-spotlight-overline">
+          SOFTHARD / TECNOLOGIA
+        </span>
+        <span className="product-spotlight-mark">OPS</span>
+        <span className="product-spotlight-orbit product-spotlight-orbit-one" />
+        <span className="product-spotlight-orbit product-spotlight-orbit-two" />
+        <span className="product-spotlight-index">PRODUTO 01</span>
+      </div>
+      <div className="product-spotlight-copy">
+        <p className="section-kicker">PRODUTO SOFTHARD</p>
+        <h3>OPS</h3>
+        <p>
+          Uma solução tecnológica do portefólio Softhard. Peça uma apresentação
+          para conhecer as suas funcionalidades e perceber o enquadramento para
+          a sua organização.
+        </p>
+        <a href={href}>
+          {actionLabel} <ArrowRight aria-hidden="true" size={17} />
+        </a>
+      </div>
+    </article>
+  );
+}
+
+export function LeadCaptureForm() {
+  const [submissionState, setSubmissionState] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [submissionMessage, setSubmissionMessage] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const fields = new FormData(form);
+    setSubmissionState("sending");
+    setSubmissionMessage("A enviar o seu pedido?");
+    try {
+      await submitLead({
+        name: String(fields.get("name") ?? ""),
+        email: String(fields.get("email") ?? ""),
+        organization: String(fields.get("organization") ?? ""),
+        phone: String(fields.get("phone") ?? ""),
+        interest: String(fields.get("interest") ?? ""),
+        message: String(fields.get("message") ?? ""),
+        sourcePage: window.location.pathname,
+        website: String(fields.get("website") ?? ""),
+      });
+      form.reset();
+      setSubmissionState("success");
+      setSubmissionMessage("Pedido recebido. A equipa Softhard entrará em contacto consigo.");
+    } catch {
+      setSubmissionState("error");
+      setSubmissionMessage("Não foi possível enviar agora. Tente novamente ou contacte-nos por email.");
+    }
+  }
+
+  return (
+    <form className="lead-form" onSubmit={handleSubmit} aria-busy={submissionState === "sending"}>
+      <label aria-hidden="true" className="lead-honeypot">
+        Website
+        <input autoComplete="off" name="website" tabIndex={-1} />
+      </label>
+      <div className="lead-form-grid">
+        <label>
+          Nome
+          <input autoComplete="name" name="name" required />
+        </label>
+        <label>
+          E-mail profissional
+          <input
+            autoComplete="email"
+            name="email"
+            required
+            type="email"
+          />
+        </label>
+        <label>
+          Organização
+          <input autoComplete="organization" name="organization" />
+        </label>
+        <label>
+          Telefone
+          <input autoComplete="tel" name="phone" type="tel" />
+        </label>
+        <label className="lead-form-wide">
+          Como podemos ajudar?
+          <select defaultValue="" name="interest" required>
+            <option disabled value="">
+              Seleccione um tema
+            </option>
+            <option>Marketing corporativo</option>
+            <option>Estratégia digital</option>
+            <option>Conteúdo e criatividade</option>
+            <option>Soluções tecnológicas</option>
+            <option>Parcerias ou outro assunto</option>
+          </select>
+        </label>
+        <label className="lead-form-wide">
+          Mensagem
+          <textarea name="message" required rows={3} />
+        </label>
+      </div>
+      <div className="lead-form-footer">
+        <p aria-live="polite" className={`lead-form-status${submissionState === "error" ? " is-error" : ""}`} role="status">
+          {submissionMessage || "Os dados são usados para responder ao seu pedido."}
+          {submissionState === "error" && <> <a href="mailto:softhard@dcinvestimentos.com">softhard@dcinvestimentos.com</a></>}
+        </p>
+        <button disabled={submissionState === "sending"} type="submit">
+          {submissionState === "sending" ? "A enviar?" : "Enviar pedido"} <ArrowRight aria-hidden="true" size={17} />
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export function ServiceCards({
   limit,
-  actionHref,
   actionLabel,
 }: {
   limit?: number;
-  actionHref: string;
-  actionLabel: string;
+  actionLabel?: string;
 }) {
   const items = serviceItems.slice(0, limit ?? serviceItems.length);
 
@@ -175,7 +357,7 @@ export function ServiceCards({
     <div
       className={`service-cards${limit === undefined ? " service-cards-all" : ""}`}
     >
-      {items.map(({ category, title, description, image }, index) => (
+      {items.map(({ slug, category, title, description, image }, index) => (
         <article className="service-card" data-reveal key={title}>
           <img
             alt=""
@@ -191,13 +373,70 @@ export function ServiceCards({
             </span>
             <h3>{title}</h3>
             <p>{description}</p>
-            <a href={actionHref}>
-              {actionLabel} <ArrowRight aria-hidden="true" size={16} />
+            <a href={`/servicos/${slug}/`}>
+              {actionLabel ?? "Explorar serviço"}{" "}
+              <ArrowRight aria-hidden="true" size={16} />
             </a>
           </div>
         </article>
       ))}
     </div>
+  );
+}
+
+function ServiceDetailPage({ route }: { route: PageRoute }) {
+  const service = serviceItems.find(
+    (item) => route === `/servicos/${item.slug}`,
+  );
+  if (!service) return null;
+
+  return (
+    <>
+      <PageIntro
+        eyebrow={`Serviços / ${service.category}`}
+        title={service.title}
+        highlight="com propósito."
+        description={service.description}
+      />
+      <section
+        aria-labelledby="service-detail-title"
+        className="page-shell service-detail-section"
+      >
+        <div className="service-detail-copy" data-reveal>
+          <p className="section-kicker">
+            <span>01</span> / COMO PODEMOS APOIAR
+          </p>
+          <h2 className="section-heading" id="service-detail-title">
+            Uma resposta pensada para <span>o seu contexto.</span>
+          </h2>
+          <p className="section-intro">{service.detail}</p>
+          <ul className="service-detail-list">
+            {service.supportItems.map((item) => (
+              <li key={item}>
+                <ArrowUpRight aria-hidden="true" size={17} />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <PageLink href="/contactos/">Fale sobre este serviço</PageLink>
+        </div>
+        <figure className="service-detail-visual" data-reveal>
+          <img
+            alt=""
+            decoding="async"
+            loading="lazy"
+            src={service.image}
+          />
+          <figcaption>{service.category} / SOFTHARD</figcaption>
+        </figure>
+      </section>
+      <section className="inner-band">
+        <div className="page-shell inner-band-layout" data-reveal>
+          <h2>Vamos transformar objectivos em próximos passos.</h2>
+          <PageLink href="/contactos/">Iniciar uma conversa</PageLink>
+        </div>
+      </section>
+    </>
   );
 }
 
@@ -311,8 +550,7 @@ function ServicesPage() {
             </p>
           </div>
           <ServiceCards
-            actionHref="/contactos/"
-            actionLabel="Vamos conversar"
+            actionLabel="Explorar serviço"
           />
         </div>
       </section>
@@ -371,44 +609,33 @@ function ProductsPage() {
         highlight="para fazer mais."
         description="Conheça os produtos Softhard e as soluções que fazem parte do nosso ecossistema."
       />
-      <section className="page-shell inner-section">
+      <section className="page-shell inner-section products-page-section">
         <div className="inner-section-heading" data-reveal>
           <p className="section-kicker">
             <span>01</span> / PRODUTOS
           </p>
           <h2 className="section-heading">
-            Soluções para <span>necessidades reais.</span>
+            Tecnologia com <span>identidade Softhard.</span>
           </h2>
           <p className="section-intro">
-            Estamos a preparar mais informação sobre os produtos da Softhard.
-            Entre em contacto para saber mais.
+            Damos destaque ao OPS, produto tecnológico da Softhard. Peça uma
+            apresentação para conhecer melhor a solução.
           </p>
         </div>
-        <div className="inner-products-grid">
-          {[
-            {
-              name: "OPS",
-              text: "Produto Softhard",
-              icon: Package,
-            },
-            {
-              name: "Marketing",
-              text: "Produtos e soluções relacionadas",
-              icon: Megaphone,
-            },
-          ].map(({ name, text, icon: Icon }, index) => (
-            <article className="inner-product-card" data-reveal key={name}>
-              <div className="inner-product-top">
-                <span>0{index + 1} / PRODUTO</span>
-                <Icon aria-hidden="true" size={24} />
-              </div>
-              <h3>{name}</h3>
-              <p>{text}</p>
-              <a href="/contactos/">
-                Pedir informações <ArrowUpRight aria-hidden="true" size={17} />
-              </a>
-            </article>
-          ))}
+        <ProductSpotlight
+          actionLabel="Pedir apresentação"
+          href="/contactos/"
+        />
+        <div className="product-related-note" data-reveal>
+          <div>
+            <p className="section-kicker">OUTRAS SOLU??ESES</p>
+            <h3>Produtos relacionados com Marketing</h3>
+            <p>
+              Fale connosco para conhecer as soluções disponíveis para a sua
+              organização.
+            </p>
+          </div>
+          <PageLink href="/contactos/">Pedir informações</PageLink>
         </div>
       </section>
     </>
@@ -510,7 +737,7 @@ function PortfolioPage() {
         <div className="page-shell portfolio-page-heading" data-reveal>
           <div>
             <p className="section-kicker">
-              <span>01</span> / EXPERIÊNCIAS EM DESTAQUE
+              <span>01</span> / EXPERI?NCIAS EM DESTAQUE
             </p>
             <h2 className="section-heading">
               Ideias que ganham <span>vida.</span>
@@ -584,6 +811,13 @@ function PortfolioPage() {
                   <div>
                     <p className="section-kicker">{item.category}</p>
                     <h3>{item.title}</h3>
+                    <a
+                      className="portfolio-page-link"
+                      href={`/portfolio/${item.slug}/`}
+                    >
+                      Ver projecto
+                      <ArrowUpRight aria-hidden="true" size={17} />
+                    </a>
                   </div>
                   <span>
                     {String(index + 1).padStart(2, "0")} /{" "}
@@ -620,120 +854,306 @@ function PortfolioPage() {
   );
 }
 
+function ProjectDetailPage({ route }: { route: PageRoute }) {
+  const project = portfolioItems.find(
+    (item) => route === `/portfolio/${item.slug}`,
+  );
+  if (!project) return null;
+
+  const projectNumber = String(
+    portfolioItems.findIndex((item) => item.slug === project.slug) + 1,
+  ).padStart(2, "0");
+
+  return (
+    <article className="project-detail-page">
+      <section
+        aria-labelledby="project-detail-title"
+        className="project-detail-hero"
+      >
+        <img
+          alt={project.alt}
+          decoding="async"
+          fetchPriority="high"
+          src={project.image}
+        />
+        <div aria-hidden="true" className="project-detail-shade" />
+        <div className="page-shell project-detail-heading" data-reveal>
+          <p className="project-detail-eyebrow">
+            {project.category} <span>?</span> PORTF?LIO SOFTHARD
+          </p>
+          <h1 id="project-detail-title" tabIndex={-1}>
+            {project.title}
+          </h1>
+          <p>{project.summary}</p>
+          <a href="#project-detail-story">
+            Explorar projecto
+            <ArrowDown aria-hidden="true" size={17} />
+          </a>
+        </div>
+        <span aria-hidden="true" className="project-detail-number">
+          PROJECTO {projectNumber}
+        </span>
+      </section>
+      <section
+        aria-labelledby="project-detail-story-title"
+        className="page-shell project-detail-content"
+        id="project-detail-story"
+      >
+        <div data-reveal>
+          <p className="section-kicker">
+            <span>{projectNumber}</span> / SOBRE ESTE REGISTO
+          </p>
+          <h2 className="section-heading" id="project-detail-story-title">
+            Histórias que ganham <span>forma no terreno.</span>
+          </h2>
+        </div>
+        <div className="project-detail-story" data-reveal>
+          <p>{project.story}</p>
+          <div className="project-detail-focus">
+            <p className="section-kicker">EM FOCO</p>
+            <ul>
+              {project.focusItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+      <section className="inner-band">
+        <div className="page-shell inner-band-layout" data-reveal>
+          <h2>Quer criar uma experiência para a sua marca?</h2>
+          <PageLink href="/contactos/">Fale connosco</PageLink>
+        </div>
+      </section>
+    </article>
+  );
+}
+
+type VideoEmbedSource = { kind: "file" | "embed"; src: string };
+
+function resolveVideoEmbed(value: string): VideoEmbedSource | null {
+  try {
+    const isAbsoluteUrl = /^https?:\/\//i.test(value);
+    const url = new URL(value, "https://softhard.invalid");
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    const videoId = host === "youtu.be"
+      ? url.pathname.slice(1).split("/")[0]
+      : ["youtube.com", "m.youtube.com", "youtube-nocookie.com"].includes(host)
+        ? url.searchParams.get("v") || url.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/)?.[1]
+        : null;
+    if (videoId && /^[\w-]{6,}$/.test(videoId)) {
+      return { kind: "embed", src: `https://www.youtube-nocookie.com/embed/${videoId}` };
+    }
+    if (host === "vimeo.com" || host === "player.vimeo.com") {
+      const videoId = url.pathname.match(/\/(?:video\/)?(\d+)/)?.[1];
+      if (videoId) return { kind: "embed", src: `https://player.vimeo.com/video/${videoId}` };
+    }
+    if (/\.(mp4|webm|ogg)$/i.test(url.pathname)) return { kind: "file", src: isAbsoluteUrl ? url.toString() : value };
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function BlogVideo({ url, title }: { url: string; title: string }) {
+  const video = resolveVideoEmbed(url);
+  if (!video) return null;
+  if (video.kind === "file") {
+    return <video className="blog-inline-video" controls playsInline preload="metadata" src={video.src} aria-label={title} />;
+  }
+  return (
+    <div className="blog-inline-video-frame">
+      <iframe
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="strict-origin-when-cross-origin"
+        src={video.src}
+        title={title}
+      />
+    </div>
+  );
+}
+
+function ArticleReadMore({ post }: { post: BlogArticle }) {
+  return (
+    <details className="blog-article-details">
+      <summary>
+        {post.mediaUrl ? "Ver reportagem" : "Ler artigo"}
+        <ArrowUpRight aria-hidden="true" size={17} />
+      </summary>
+      <div className="blog-article-body">
+        {post.mediaUrl && <BlogVideo title={post.title} url={post.mediaUrl} />}
+        {post.images?.map((image) => (
+          <figure className="blog-article-image" key={image.src}>
+            <img src={image.src} alt={image.alt || post.title} loading="lazy" decoding="async" />
+          </figure>
+        ))}
+        {post.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+      </div>
+    </details>
+  );
+}
+
 function NewsPage() {
-  const [activeCategory, setActiveCategory] =
-    useState<(typeof blogCategories)[number]>("Todos");
-  const visiblePosts =
-    activeCategory === "Todos"
-      ? blogPosts
-      : blogPosts.filter((post) => post.category === activeCategory);
+  const [activeCategory, setActiveCategory] = useState("Todos");
+  const [posts, setPosts] = useState<BlogArticle[]>(import.meta.env.DEV ? blogPosts : []);
+  const [loading, setLoading] = useState(true);
+  const [loadMessage, setLoadMessage] = useState("");
+  const [showingDemo, setShowingDemo] = useState(import.meta.env.DEV);
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getPublicPosts(controller.signal)
+      .then((remotePosts) => {
+        const articles = remotePosts.map((post): BlogArticle => {
+          const parsed = new DOMParser().parseFromString(post.content, "text/html");
+          const images = Array.from(parsed.body.querySelectorAll("img[src]"))
+            .map((image) => {
+              const rawSource = image.getAttribute("src") || "";
+              try {
+                const source = new URL(rawSource, window.location.origin);
+                return (source.protocol === "https:" || source.origin === window.location.origin)
+                  ? { src: source.toString(), alt: image.getAttribute("alt") || post.title }
+                  : null;
+              } catch {
+                return null;
+              }
+            })
+            .filter((image): image is { src: string; alt: string } => image !== null);
+          const paragraphs = Array.from(parsed.body.querySelectorAll("p, li, h2, h3, blockquote"))
+            .map((node) => node.textContent?.trim() ?? "")
+            .filter(Boolean);
+          if (paragraphs.length === 0) {
+            paragraphs.push(...(parsed.body.textContent ?? "").split(/\n+/).map((part) => part.trim()).filter(Boolean));
+          }
+          return {
+            id: post.id,
+            title: post.title,
+            category: post.category || "Geral",
+            excerpt: post.excerpt || paragraphs.join(" ").slice(0, 200),
+            image: post.coverImage || "/softhard-field.jpg",
+            imageAlt: post.title,
+            mediaUrl: post.mediaUrl || undefined,
+            publishedAt: post.publishedAt,
+            images,
+            paragraphs,
+          };
+        });
+        const useDemoContent = import.meta.env.DEV && articles.length === 0;
+        setPosts(useDemoContent ? blogPosts : articles);
+        setShowingDemo(useDemoContent);
+        setLoadMessage(useDemoContent
+          ? "A mostrar conteúdos de demonstração; os artigos publicados no CMS substituirão esta selecção."
+          : articles.length === 0 ? "Ainda não há publicações." : "");
+      })
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        if (import.meta.env.DEV) {
+          setPosts(blogPosts);
+          setShowingDemo(true);
+          setLoadMessage("A mostrar conteúdos de demonstração; configure a ligação à API para carregar artigos publicados.");
+        } else {
+          setPosts([]);
+          setShowingDemo(false);
+          setLoadMessage("Não foi possível carregar o blogue neste momento. Tente novamente mais tarde.");
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+
+  const visiblePosts = activeCategory === "Todos"
+    ? posts
+    : posts.filter((post) => post.category === activeCategory);
+  const categories = ["Todos", ...new Set(posts.map((post) => post.category))];
+  const featuredPost = visiblePosts[0];
+  const latestPosts = visiblePosts.slice(1, visibleCount + 1);
+  const hasMorePosts = visiblePosts.length > visibleCount + 1;
+
+  function formatPublishedDate(value?: string | null) {
+    if (!value) return "Softhard";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Softhard";
+    return new Intl.DateTimeFormat("pt-AO", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+  }
+
+  function readingTime(post: BlogArticle) {
+    const words = post.paragraphs.join(" ").split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.ceil(words / 190));
+  }
 
   return (
     <>
       <section aria-labelledby="news-page-title" className="news-hero">
         <div className="page-shell news-hero-content" data-reveal>
-          <p className="eyebrow">
-            <span className="eyebrow-mark" />
-            Blogue Softhard
-          </p>
-          <h1 id="news-page-title">
-            Menos ruído.
-            <br />
-            <span>Mais ideias.</span>
-          </h1>
-          <p className="news-hero-description">
-            Perspectivas sobre estratégia, comunicação e experiências que
-            aproximam marcas e pessoas.
-          </p>
-          <a className="news-hero-link" href="#news-articles">
-            Explorar artigos
-            <ChevronDown aria-hidden="true" size={18} />
-          </a>
-          <p className="news-hero-meta">
-            Estratégia digital · Marcas · Experiências
-          </p>
+          <div className="news-hero-intro">
+            <p className="eyebrow"><span className="eyebrow-mark" />Blogue Softhard</p>
+            <h1 id="news-page-title">Histórias que <span>põem marcas em movimento.</span></h1>
+            <p className="news-hero-description">Ideias, reportagens e bastidores da comunicação que aproxima empresas e pessoas.</p>
+            <a className="news-hero-link" href="#news-articles">Explorar o blogue <ChevronDown aria-hidden="true" size={18} /></a>
+            <p className="news-hero-meta">Estratégia · Marcas · Audiovisual · Cultura</p>
+          </div>
+          {featuredPost ? (
+            <article className="news-featured" aria-label="Destaque editorial">
+              <div className="news-featured-visual">
+                <img src={featuredPost.image} alt={featuredPost.imageAlt} fetchPriority="high" />
+                {featuredPost.mediaUrl && <span className="news-media-badge"><Play aria-hidden="true" size={13} fill="currentColor" /> Vídeo</span>}
+              </div>
+              <div className="news-featured-copy">
+                <div className="news-featured-meta"><span>{featuredPost.category}</span><span>{formatPublishedDate(featuredPost.publishedAt)}</span></div>
+                <h2>{featuredPost.title}</h2>
+                <p>{featuredPost.excerpt}</p>
+                <ArticleReadMore post={featuredPost} />
+              </div>
+            </article>
+          ) : (
+            <div className="news-featured-empty"><span>SOFTHARD / EDITORIAL</span><strong>Ideias com impacto.</strong></div>
+          )}
         </div>
       </section>
-      <section
-        aria-labelledby="news-articles-title"
-        className="page-shell inner-section blog-section"
-        id="news-articles"
-      >
+      <section aria-labelledby="news-articles-title" className="page-shell inner-section blog-section" id="news-articles">
         <div className="inner-section-heading" data-reveal>
-          <p className="section-kicker">
-            <span>01</span> / IDEIAS E PERSPECTIVAS
-          </p>
-          <h2 className="section-heading" id="news-articles-title">
-            Conversas para <span>avançar.</span>
-          </h2>
-          <p className="section-intro">
-            Leituras breves para pensar a comunicação, as marcas e a relação
-            com as pessoas.
-          </p>
+          <p className="section-kicker"><span>01</span> / IDEIAS E PERSPECTIVAS</p>
+          <h2 className="section-heading" id="news-articles-title">Comunicação em <span>todas as formas.</span></h2>
+          <p className="section-intro">Artigos, imagens e vídeo sobre o trabalho, as ideias e as histórias que partilhamos com os nossos clientes.</p>
         </div>
-        <div
-          aria-label="Filtrar artigos por tema"
-          className="blog-filters"
-          role="group"
-        >
-          {blogCategories.map((category) => (
-            <button
-              aria-pressed={activeCategory === category}
-              className={activeCategory === category ? "is-active" : ""}
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              type="button"
-            >
+        <div className="blog-category-heading"><h3>Explore categorias</h3><span>{posts.length} {posts.length === 1 ? "publicação" : "publicações"}</span></div>
+        <div aria-label="Filtrar artigos por tema" className="blog-filters" role="group">
+          {categories.map((category) => (
+            <button aria-pressed={activeCategory === category} className={activeCategory === category ? "is-active" : ""} key={category} onClick={() => { setActiveCategory(category); setVisibleCount(6); }} type="button">
               {category}
             </button>
           ))}
         </div>
-        <div aria-live="polite" className="blog-grid">
-          {visiblePosts.map((post, index) => {
-            const postNumber = String(index + 1).padStart(2, "0");
-            return (
-              <article
-                className={`blog-card${
-                  activeCategory === "Todos" && index === 0
-                    ? " blog-card-featured"
-                    : ""
-                }`}
-                key={post.title}
-              >
+        {loading && <p className="blog-load-message" role="status">A carregar publicações…</p>}
+        {!loading && loadMessage && <p className={`blog-load-message${showingDemo ? " is-demo" : ""}`} role="status">{loadMessage}</p>}
+        <div className="blog-recent-heading"><h3>Publicações recentes</h3><span>O que estamos a criar e a pensar</span></div>
+        {latestPosts.length > 0 ? (
+          <div aria-live="polite" className="blog-grid">
+            {latestPosts.map((post) => (
+              <article className="blog-card" key={post.id ?? post.title}>
                 <div className="blog-card-art">
-                  <img
-                    alt={post.imageAlt}
-                    decoding="async"
-                    loading="lazy"
-                    src={post.image}
-                  />
-                  <span aria-hidden="true" className="blog-card-image-index">
-                    {postNumber}
-                  </span>
+                  <img alt={post.imageAlt} decoding="async" loading="lazy" src={post.image} />
+                  {post.mediaUrl && <span className="blog-card-video"><Play aria-hidden="true" size={12} fill="currentColor" /> Vídeo</span>}
                 </div>
                 <div className="blog-card-content">
-                  <div className="blog-card-meta">
-                    <p className="section-kicker">{post.category}</p>
-                    <span>Perspectiva {postNumber}</span>
-                  </div>
+                  <div className="blog-card-meta"><p className="section-kicker">{post.category}</p><span>{formatPublishedDate(post.publishedAt)}</span></div>
                   <h3>{post.title}</h3>
                   <p className="blog-card-excerpt">{post.excerpt}</p>
-                  <details className="blog-article-details">
-                    <summary>
-                      Ler perspectiva
-                      <ChevronDown aria-hidden="true" size={17} />
-                    </summary>
-                    <div className="blog-article-body">
-                      {post.paragraphs.map((paragraph) => (
-                        <p key={paragraph}>{paragraph}</p>
-                      ))}
-                    </div>
-                  </details>
+                  <div className="blog-card-bottom"><span><Clock3 aria-hidden="true" size={14} /> {readingTime(post)} min de leitura</span><ArticleReadMore post={post} /></div>
                 </div>
               </article>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : !loading && !featuredPost ? (
+          <div className="blog-empty-state">As próximas histórias da Softhard serão publicadas aqui.</div>
+        ) : null}
+        {hasMorePosts && <button className="blog-load-more" onClick={() => setVisibleCount((count) => count + 6)} type="button">Carregar mais publicações <ArrowDown aria-hidden="true" size={16} /></button>}
       </section>
       <section className="inner-band">
         <div className="page-shell inner-band-layout" data-reveal>
@@ -744,7 +1164,6 @@ function NewsPage() {
     </>
   );
 }
-
 function CareersPage() {
   return (
     <>
@@ -752,36 +1171,48 @@ function CareersPage() {
         eyebrow="Carreiras"
         title="Boas ideias começam"
         highlight="com pessoas."
-        description="Conheça a forma como pensamos e apresente-se à equipa Softhard, mesmo que ainda não tenha encontrado a oportunidade certa."
+        description="Explore as áreas profissionais da Softhard e apresente a sua candidatura espontânea à equipa."
       />
       <section className="inner-values-section">
         <div className="page-shell">
           <div className="inner-section-heading" data-reveal>
             <p className="section-kicker section-kicker-light">
-              <span>01</span> / O QUE VALORIZAMOS
+              <span>01</span> / ÁREAS PROFISSIONAIS
             </p>
             <h2 className="section-heading">
-              Pessoas curiosas. <span>Ideias com propósito.</span>
+              Há espaço para diferentes <span>talentos.</span>
             </h2>
           </div>
           <div className="inner-values-grid">
             {[
               {
-                title: "Curiosidade",
-                text: "Vontade de aprender, fazer perguntas e compreender novos contextos.",
+                title: "Marketing",
+                text: "Estratégia, posicionamento e comunicação para marcas e organizações.",
               },
               {
-                title: "Iniciativa",
-                text: "Disponibilidade para transformar desafios em propostas concretas.",
+                title: "Tráfego pago",
+                text: "Planeamento e optimização de campanhas em canais digitais.",
               },
               {
-                title: "Colaboração",
-                text: "Respeito por diferentes perspectivas e compromisso com o trabalho em equipa.",
+                title: "Social media",
+                text: "Conteúdo e gestão da presença de marcas nas redes sociais.",
+              },
+              {
+                title: "Design",
+                text: "Identidade visual e materiais gráficos para comunicação.",
+              },
+              {
+                title: "Fotógrafo(a)",
+                text: "Produção de fotografia para projectos, campanhas e eventos.",
+              },
+              {
+                title: "Desenvolvedor(a) de software",
+                text: "Criação e manutenção de aplicações e soluções digitais.",
               },
             ].map(({ title, text }, index) => (
               <article className="inner-value-card" data-reveal key={title}>
                 <span className="inner-card-number">
-                  0{index + 1} / SOFTHARD
+                  0{index + 1} / CARREIRAS
                 </span>
                 <h3>{title}</h3>
                 <p>{text}</p>
@@ -790,24 +1221,99 @@ function CareersPage() {
           </div>
         </div>
       </section>
-      <section className="page-shell inner-section inner-careers" data-reveal>
-        <div>
+      <section className="page-shell inner-section lead-contact-section careers-application-section">
+        <div className="inner-section-heading" data-reveal>
           <p className="section-kicker">
-            <span>02</span> / CANDIDATURA ESPONTÂNEA
+            <span>02</span> / CANDIDATURA ESPONT?NEA
           </p>
           <h2 className="section-heading">
-            Vamos descobrir o que podemos <span>criar em conjunto.</span>
+            Vamos conhecer <span>o seu talento.</span>
           </h2>
           <p className="section-intro">
-            Envie uma breve apresentação, indique a área em que gostaria de
-            colaborar e, se tiver, partilhe o seu portfólio.
+            Conte-nos sobre si, escolha a área em que gostaria de colaborar e
+            partilhe um link para o seu portfólio ou perfil profissional, se
+            tiver.
           </p>
         </div>
-        <PageLink href="mailto:softhard@dcinvestimentos.com?subject=Candidatura%20Softhard">
-          Enviar candidatura
-        </PageLink>
+        <CareersApplicationForm />
       </section>
     </>
+  );
+}
+
+function CareersApplicationForm() {
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    event.currentTarget.reset();
+    setSubmitted(true);
+  }
+
+  return (
+    <form className="lead-form" onSubmit={handleSubmit}>
+      <div className="lead-form-grid">
+        <label>
+          Nome completo
+          <input autoComplete="name" name="name" required />
+        </label>
+        <label>
+          E-mail
+          <input
+            autoComplete="email"
+            name="email"
+            required
+            type="email"
+          />
+        </label>
+        <label>
+          Telefone
+          <input autoComplete="tel" name="phone" type="tel" />
+        </label>
+        <label>
+          Área de interesse
+          <select defaultValue="" name="interest" required>
+            <option disabled value="">
+              Seleccione uma área
+            </option>
+            <option>Marketing</option>
+            <option>Tráfego pago</option>
+            <option>Social media</option>
+            <option>Design</option>
+            <option>Fotógrafo(a)</option>
+            <option>Desenvolvedor(a) de software</option>
+          </select>
+        </label>
+        <label className="lead-form-wide">
+          Portfólio, LinkedIn ou outro link (opcional)
+          <input
+            autoComplete="url"
+            name="portfolio"
+            placeholder="https://"
+            type="url"
+          />
+        </label>
+        <label className="lead-form-wide">
+          Apresentação
+          <textarea
+            name="message"
+            required
+            rows={4}
+            placeholder="Conte-nos sobre a sua experiência e motivação."
+          />
+        </label>
+      </div>
+      <div className="lead-form-footer">
+        <p aria-live="polite" className="lead-form-status" role="status">
+          {submitted
+            ? "Candidatura simulada. Nenhum dado foi enviado ou guardado."
+            : "Formulário demonstrativo: os dados não são enviados nem guardados."}
+        </p>
+        <button type="submit">
+          Enviar candidatura <ArrowRight aria-hidden="true" size={17} />
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -816,59 +1322,37 @@ function ContactsPage() {
     <>
       <PageIntro
         eyebrow="Contactos"
-        title="Vamos conversar"
-        highlight="sobre a sua próxima ideia."
-        description="Fale com a equipa Softhard sobre serviços, produtos, projectos ou oportunidades."
+        title="Vamos conhecer"
+        highlight="o seu desafio."
+        description="Partilhe o que pretende alcançar e indique como podemos entrar em contacto."
       />
-      <section className="page-shell inner-section inner-contact">
+      <section className="page-shell inner-section lead-contact-section">
         <div className="inner-section-heading" data-reveal>
           <p className="section-kicker">
             <span>01</span> / FALE CONNOSCO
           </p>
           <h2 className="section-heading">
-            Estamos prontos para <span>ouvir.</span>
+            Uma boa conversa começa <span>com contexto.</span>
           </h2>
           <p className="section-intro">
-            Diga-nos o que pretende alcançar. A nossa equipa está disponível
-            para conversar consigo.
+            Conte-nos sobre a sua organização, o tema que procura e os
+            resultados que pretende alcançar.
           </p>
         </div>
-        <address className="inner-contact-details" data-reveal>
-          <a href="mailto:softhard@dcinvestimentos.com">
-            <span>E-mail</span>
-            softhard@dcinvestimentos.com
-            <ArrowUpRight aria-hidden="true" size={18} />
-          </a>
-          <a href="tel:+244932799790">
-            <span>Telefone</span>
-            +244 932 799 790
-            <ArrowUpRight aria-hidden="true" size={18} />
-          </a>
-          <a href="tel:+244956007537">
-            <span>Telefone</span>
-            +244 956 007 537
-            <ArrowUpRight aria-hidden="true" size={18} />
-          </a>
-          <a
-            href="https://www.instagram.com/softhard_ao/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <span>Instagram</span>
-            @softhard_ao
-            <ArrowUpRight aria-hidden="true" size={18} />
-          </a>
-          <p>
-            <span>Morada</span>
-            Av. Lenine, Maianga, Ingombotas, Angola
-          </p>
-        </address>
+        <LeadCaptureForm />
       </section>
     </>
   );
 }
 
 export default function ContentPages({ route }: { route: PageRoute }) {
+  if (route.startsWith("/servicos/")) {
+    return <ServiceDetailPage route={route} />;
+  }
+  if (route.startsWith("/portfolio/")) {
+    return <ProjectDetailPage route={route} />;
+  }
+
   switch (route) {
     case "/sobre":
       return <AboutPage />;
@@ -898,7 +1382,7 @@ export function NotFoundPage() {
       <div className="page-shell not-found-layout">
         <div className="not-found-copy" data-reveal>
           <p className="section-kicker">
-            <span>404</span> / PÁGINA NÃO ENCONTRADA
+            <span>404</span> / P?GINA N?O ENCONTRADA
           </p>
           <h1 id="not-found-title" tabIndex={-1}>
             Este caminho não leva a <span>nenhuma página.</span>

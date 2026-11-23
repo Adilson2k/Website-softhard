@@ -13,20 +13,22 @@ import {
   ChevronLeft,
   ChevronRight,
   Cpu,
-  Instagram,
-  Mail,
-  MapPin,
   Menu,
   MoveHorizontal,
   Newspaper,
   Pause,
   Package,
-  Phone,
   Play,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ContentPages, { NotFoundPage, ServiceCards } from "./ContentPages";
+import ContentPages, {
+  LeadCaptureForm,
+  NotFoundPage,
+  portfolioItems,
+  ProductSpotlight,
+  ServiceCards,
+} from "./ContentPages";
 import {
   normalizePageRoute,
   notFoundRoute,
@@ -69,30 +71,6 @@ const highlights = [
       "Conheça alguns trabalhos e experiências realizados pela Softhard.",
     href: "/portfolio/",
     icon: ArrowUpRight,
-  },
-];
-
-const portfolioItems = [
-  {
-    title: "Acqua ETA",
-    category: "Projecto em destaque",
-    image: "/acqua-eta.jpg",
-    imageDescription:
-      "Equipa de profissionais em frente à instalação da ETA Sudeste",
-  },
-  {
-    title: "Visita de campo",
-    category: "Tecnologia no terreno",
-    image: "/softhard-field.jpg",
-    imageDescription:
-      "Profissionais numa visita de campo a uma instalação industrial",
-  },
-  {
-    title: "Corrida Odebrecht",
-    category: "Evento",
-    image: "/odebrecht-corrida.jpg",
-    imageDescription:
-      "Participantes junto ao arco de partida da corrida Odebrecht",
   },
 ];
 
@@ -445,7 +423,10 @@ function App({ initialPath }: { initialPath?: string } = {}) {
                 <li key={item.href}>
                   <a
                     aria-current={
-                      pathname === normalizePageRoute(item.href)
+                      pathname === normalizePageRoute(item.href) ||
+                      pathname.startsWith(
+                        `${normalizePageRoute(item.href)}/`,
+                      )
                         ? "page"
                         : undefined
                     }
@@ -626,6 +607,26 @@ function App({ initialPath }: { initialPath?: string } = {}) {
               </a>
             </div>
           </div>
+          <div className="about-showcase" data-reveal>
+            <img
+              alt="Profissionais numa visita de campo a uma instalação industrial"
+              decoding="async"
+              loading="lazy"
+              src="/softhard-field.jpg"
+            />
+            <div className="about-showcase-copy">
+              <p className="section-kicker">SOFTHARD / ANGOLA</p>
+              <h3>Da estratégia à experiência no terreno.</h3>
+              <p>
+                Aproximamos estratégia, comunicação e tecnologia para apoiar
+                marcas e organizações no contexto angolano.
+              </p>
+              <a className="text-link" href="/sobre/">
+                Conheça a nossa abordagem{" "}
+                <ArrowRight aria-hidden="true" size={17} />
+              </a>
+            </div>
+          </div>
           <div className="about-ribbon">
             <span>Marketing corporativo</span>
             <span aria-hidden="true" />
@@ -661,7 +662,6 @@ function App({ initialPath }: { initialPath?: string } = {}) {
               </a>
             </div>
             <ServiceCards
-              actionHref="/servicos/"
               actionLabel="Saber mais"
               limit={3}
             />
@@ -676,35 +676,19 @@ function App({ initialPath }: { initialPath?: string } = {}) {
           <div className="section-kicker">
             <span>03</span> / PRODUTOS
           </div>
-          <div className="products-grid">
-            <div>
-              <h2 className="section-heading" id="products-title">
-                Ferramentas criadas para <span>fazer mais.</span>
-              </h2>
-              <p className="section-intro">
-                Conheça o OPS e os produtos relacionados com Marketing que
-                integram o portefólio da Softhard.
-              </p>
-            </div>
-            <div className="product-list">
-              <article className="product-row">
-                <span className="product-number">01</span>
-                <div>
-                  <h3>OPS</h3>
-                  <p>Produto Softhard</p>
-                </div>
-                <ArrowUpRight aria-hidden="true" size={20} />
-              </article>
-              <article className="product-row">
-                <span className="product-number">02</span>
-                <div>
-                  <h3>Marketing</h3>
-                  <p>Produtos e soluções relacionadas</p>
-                </div>
-                <ArrowUpRight aria-hidden="true" size={20} />
-              </article>
-            </div>
+          <div className="products-intro">
+            <h2 className="section-heading" id="products-title">
+              Tecnologia com <span>identidade Softhard.</span>
+            </h2>
+            <p className="section-intro">
+              Conheça os produtos tecnológicos e as soluções relacionadas com
+              Marketing que integram o nosso portefólio.
+            </p>
           </div>
+          <ProductSpotlight
+            actionLabel="Explorar o OPS"
+            href="/produtos/"
+          />
         </section>
 
         <section
@@ -753,7 +737,7 @@ function App({ initialPath }: { initialPath?: string } = {}) {
                 key={item.title}
               >
                 <img
-                  alt={item.imageDescription}
+                  alt={item.alt}
                   className="portfolio-image"
                   decoding="async"
                   draggable={false}
@@ -767,8 +751,8 @@ function App({ initialPath }: { initialPath?: string } = {}) {
                     <h3>{item.title}</h3>
                   </div>
                   <a
-                    aria-label={`Fale connosco sobre ${item.title}`}
-                    href="/contactos/"
+                    aria-label={`Ver projecto ${item.title}`}
+                    href={`/portfolio/${item.slug}/`}
                   >
                     <ArrowUpRight aria-hidden="true" size={24} />
                   </a>
@@ -883,7 +867,7 @@ function App({ initialPath }: { initialPath?: string } = {}) {
               </h2>
               <p>
                 Consulte oportunidades profissionais e saiba como apresentar
-                uma candidatura espontânea.
+                uma candidatura espont?nea.
               </p>
             </div>
             <a className="careers-link" href="/carreiras/">
@@ -904,55 +888,14 @@ function App({ initialPath }: { initialPath?: string } = {}) {
             <div className="contact-layout">
               <div>
                 <h2 id="contact-title">
-                  Tem uma ideia? <span>Vamos conversar.</span>
+                  Conte-nos sobre a sua <span>próxima ideia.</span>
                 </h2>
                 <p>
-                  Fale com a equipa Softhard sobre serviços, produtos,
-                  projectos ou oportunidades.
+                  Partilhe o seu desafio. A equipa Softhard irá conhecer o seu
+                  contexto e o que pretende alcançar.
                 </p>
               </div>
-              <address className="contact-details">
-                <a className="contact-item" href="mailto:softhard@dcinvestimentos.com">
-                  <Mail aria-hidden="true" size={18} />
-                  <span>
-                    <small>E-mail</small>
-                    softhard@dcinvestimentos.com
-                  </span>
-                </a>
-                <a className="contact-item" href="tel:+244932799790">
-                  <Phone aria-hidden="true" size={18} />
-                  <span>
-                    <small>Telefone</small>
-                    +244 932 799 790
-                  </span>
-                </a>
-                <a className="contact-item" href="tel:+244956007537">
-                  <Phone aria-hidden="true" size={18} />
-                  <span>
-                    <small>Telefone</small>
-                    +244 956 007 537
-                  </span>
-                </a>
-                <a
-                  className="contact-item"
-                  href="https://www.instagram.com/softhard_ao/"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <Instagram aria-hidden="true" size={18} />
-                  <span>
-                    <small>Instagram</small>
-                    @softhard_ao
-                  </span>
-                </a>
-                <div className="contact-item">
-                  <MapPin aria-hidden="true" size={18} />
-                  <span>
-                    <small>Morada</small>
-                    Av. Lenine, Maianga, Ingombotas, Angola
-                  </span>
-                </div>
-              </address>
+              <LeadCaptureForm />
             </div>
             <span aria-hidden="true" className="contact-decoration">
               SOFTHARD
