@@ -1,7 +1,7 @@
 import "dotenv/config";
 import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
-import { rateLimit } from "express-rate-limit";
+import * as rateLimit from "express-rate-limit";
 import { blobRouter } from "./blob.js";
 import { adminLeadsRouter, publicLeadsRouter } from "./leads.js";
 import { adminPostsRouter, publicPostsRouter } from "./posts.js";
@@ -37,7 +37,7 @@ app.get("/api/health", (_request, response) => {
   });
 });
 
-const leadSubmissionLimit = rateLimit({
+const leadSubmissionLimit = rateLimit.rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 5,
   standardHeaders: "draft-8",
