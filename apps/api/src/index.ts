@@ -1,7 +1,7 @@
 import "dotenv/config";
 import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import { blobRouter } from "./blob.js";
 import { adminLeadsRouter, publicLeadsRouter } from "./leads.js";
 import { adminPostsRouter, publicPostsRouter } from "./posts.js";
