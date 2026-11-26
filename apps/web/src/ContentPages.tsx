@@ -11,6 +11,7 @@
   MoveHorizontal,
   Play,
   Clock3,
+  Quote,
 } from "lucide-react";
 import {
   useRef,
@@ -61,6 +62,17 @@ export const portfolioItems = [
       "Este registo destaca o momento de partida e a participação colectiva numa actividade apresentada no portfólio Softhard.",
     focusItems: ["Evento", "Participação", "Experiência colectiva"],
   },
+];
+
+export const clientNames = [
+  "NP Gandour Angola",
+  "Refriango",
+  "Chefe's Borges",
+  "Restaurante Moquecas",
+  "Restaurante Ceano",
+  "Royal Language Academy",
+  "Torinho Eventos",
+  "Delicate Angola",
 ];
 
 export const serviceItems = [
@@ -474,6 +486,26 @@ function AboutPage() {
           <span>Ideias que avançam, em conjunto.</span>
         </div>
       </section>
+      <section className="page-shell mt-16" aria-labelledby="ceo-message">
+        <div className="grid overflow-hidden rounded-2xl border border-line bg-white lg:grid-cols-[.7fr_1.3fr]" data-reveal>
+          <div className="relative min-h-[320px] overflow-hidden bg-[#fff0ed] sm:min-h-[380px]">
+            <img
+              src="/ceo-softhard.jpg"
+              alt="Retrato do CEO da Softhard"
+              className="absolute inset-0 size-full object-cover object-[center_32%]"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div className="flex flex-col justify-center p-8 sm:p-12">
+            <Quote aria-hidden="true" className="size-7 text-brand" />
+            <p className="eyebrow mt-6 text-brand">Mensagem do CEO</p>
+            <h2 id="ceo-message" className="mt-3 text-2xl font-bold tracking-[-.045em] sm:text-3xl">Uma palavra de quem lidera a Softhard.</h2>
+            <blockquote className="mt-4 max-w-xl border-l-2 border-brand pl-4 text-base italic leading-7 text-ink sm:text-lg">“Se todos os grandes caminham para uma direção, é muito provável que seja aquele o caminho para o crescimento!”</blockquote>
+            <p className="mt-8 border-t border-line pt-5 text-sm font-bold">CEO da Softhard</p>
+          </div>
+        </div>
+      </section>
       <section className="inner-values-section">
         <div className="page-shell">
           <div className="inner-section-heading" data-reveal>
@@ -842,6 +874,20 @@ function PortfolioPage() {
               type="button"
             />
           ))}
+        </div>
+      </section>
+      <section className="border-y border-line bg-white py-16 sm:py-20">
+        <div className="page-shell" data-reveal>
+          <p className="section-kicker">CLIENTES E PARCEIROS</p>
+          <h2 className="section-heading">Marcas que caminham com a Softhard.</h2>
+          <p className="section-intro">Empresas e organizações com quem construímos relações de trabalho.</p>
+          <ul className="mt-8 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 lg:grid-cols-4">
+            {clientNames.map((client) => (
+              <li key={client} className="flex min-h-24 items-center justify-center rounded-xl border border-line bg-paper px-4 py-5 text-center text-sm font-semibold text-ink sm:min-h-28 sm:text-base">
+                {client}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
       <section className="inner-band">
