@@ -21,7 +21,8 @@ interface Session {
 }
 
 const storageKey = "softhard.cms.session";
-const apiBase = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+const configuredApiUrl = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const apiBase = /\/api$/i.test(configuredApiUrl) ? configuredApiUrl : `${configuredApiUrl}/api`;
 const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY as string | undefined;
 type FirebaseAuth = import("firebase/auth").Auth;
 let firebaseAuthPromise: Promise<FirebaseAuth | null> | null = null;

@@ -12,7 +12,7 @@ const port = Number(process.env.PORT ?? 3001);
 const allowedOrigins = new Set(
   (process.env.CORS_ORIGIN ?? "http://localhost:5174,http://localhost:3002")
     .split(",")
-    .map((origin) => origin.trim())
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
     .filter(Boolean),
 );
 
