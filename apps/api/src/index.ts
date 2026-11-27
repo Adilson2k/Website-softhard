@@ -17,8 +17,11 @@ const allowedOrigins = new Set(
 );
 
 app.disable("x-powered-by");
-app.set("trust proxy", process.env.TRUST_PROXY === "true" ? 1 : false);
-app.use(cors({
+app.set(
+  "trust proxy",
+  process.env.TRUST_PROXY === "true" || process.env.VERCEL === "1" ? 1 : false,
+);
+const corsMiddleware = cors({
   origin(origin, callback) {
     if (!origin || allowedOrigins.has(origin)) {
       callback(null, true);
@@ -26,7 +29,18 @@ app.use(cors({
     }
     callback(Object.assign(new Error("Origin is not allowed."), { status: 403 }));
   },
-}));
+});
+app.use((request, response, next) => {
+  const origin = request.get("origin");
+  const requestOrigin = `${request.protocol}://${request.get("host")}`;
+
+  if (!origin || origin === requestOrigin) {
+    next();
+    return;
+  }
+
+  corsMiddleware(request, response, next);
+});
 app.use(express.json({ limit: "64kb" }));
 app.use("/api/blob", express.raw({ type: ["image/jpeg", "image/png", "image/webp", "image/gif"], limit: "10mb" }), blobRouter);
 

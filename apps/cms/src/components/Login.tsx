@@ -35,7 +35,7 @@ export default function Login() {
     <main className="flex min-h-screen items-center justify-center bg-[oklch(0.995_0_0)] p-4">
       <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-lg">
         <header className="mb-8 text-center">
-          <img src="/logo-softhard.png" alt="Softhard" className="cms-logo-login mx-auto mb-4" />
+          <img src={`${import.meta.env.BASE_URL}logo-softhard.png`} alt="Softhard" className="cms-logo-login mx-auto mb-4" />
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Softhard CMS</h1>
           <p className="mt-2 text-sm text-zinc-500">Acesso reservado à equipa autorizada</p>
         </header>

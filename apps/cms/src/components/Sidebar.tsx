@@ -89,7 +89,7 @@ export default function Sidebar({ currentView, onViewChange, isOpen, setIsOpen, 
         <div className="flex flex-col h-full">
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src="/logo-softhard.png" alt="Softhard" className="cms-logo" />
+              <img src={`${import.meta.env.BASE_URL}logo-softhard.png`} alt="Softhard" className="cms-logo" />
             </div>
             <button
               onClick={() => setIsOpen(false)}

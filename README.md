@@ -45,7 +45,7 @@ Pop-Location
 - Porta configurável com `PORT` (padrão `3001`).
 - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL` e `FIREBASE_PRIVATE_KEY` configuram Firebase Admin como segredos de ambiente; também é aceite `FIREBASE_SERVICE_ACCOUNT_JSON`. Veja `apps/api/README.md`; não adicione credenciais ao Git.
 - `CORS_ORIGIN` define a allowlist de origens (padrão `http://localhost:5174,http://localhost:3002`; aceita uma lista separada por vírgulas).
-- `VITE_API_URL` no frontend define a URL base da API (padrão `http://localhost:3001`); use `apps/web/.env.example` como referência.
+- `VITE_API_URL` no frontend permite substituir a URL base da API; por padrão, o frontend usa `/api` e o proxy do Vite encaminha os pedidos locais para `http://localhost:3001`.
 
 ## Build
 
@@ -54,6 +54,14 @@ npm run build
 ```
 
 O build gera HTML pré-renderizado para a página inicial, as páginas institucionais e a página `404.html` em `apps/web/dist/`, além dos assets de produção.
+
+## Deploy no Vercel
+
+O `vercel.json` na raiz configura os três serviços do monorepo: website em `/`, CMS em `/cms` e API em `/api`. No projecto Vercel, ligue o repositório com a raiz definida para a raiz do monorepo e seleccione **Services** como Framework Preset. A funcionalidade Services está em beta e requer esta configuração do projecto.
+
+Configure as variáveis no ambiente do projecto Vercel. Para a API: `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `CMS_ADMIN_EMAILS` e `BLOB_READ_WRITE_TOKEN`. Para o CMS: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID` e `VITE_FIREBASE_APP_ID`. Não é necessário definir `VITE_API_URL` para produção: website e CMS usam a API no mesmo domínio, em `/api`.
+
+Para executar localmente com o CLI do Vercel instalado e autenticado, use `vercel dev` na raiz do monorepo.
 
 ## SEO
 

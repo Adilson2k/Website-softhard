@@ -11,7 +11,7 @@ npm install
 npm run dev --workspace=api
 ```
 
-Set `VITE_API_URL=http://localhost:3001` in `apps/web/.env.local` when the web app needs a non-default API address. `CORS_ORIGIN` accepts a comma-separated allowlist. Set `TRUST_PROXY=true` only when the API is behind a trusted reverse proxy so rate limits use the client IP.
+The web app defaults to `/api`; the Vite development proxy forwards these requests to `http://localhost:3001`. Set `VITE_API_URL` in `apps/web/.env.local` only when using a different API address. `CORS_ORIGIN` accepts a comma-separated allowlist. Set `TRUST_PROXY=true` only when the API is behind a trusted reverse proxy so rate limits use the client IP. Vercel sets `VERCEL=1`, which enables the proxy trust and is used to serve the CMS under `/cms`.
 
 ## Routes
 

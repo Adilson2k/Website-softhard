@@ -128,7 +128,7 @@ export default function App() {
       <main className="min-h-screen lg:ml-64 flex flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 md:px-6">
           <div className="flex items-center gap-3">
-            <img src="/logo-softhard.png" alt="Softhard" className="h-9 w-[118px] object-cover object-center lg:hidden" />
+            <img src={`${import.meta.env.BASE_URL}logo-softhard.png`} alt="Softhard" className="h-9 w-[118px] object-cover object-center lg:hidden" />
             <div className="hidden items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-400 md:flex">
               <span>CMS</span>
               <span className="text-zinc-200">/</span>
