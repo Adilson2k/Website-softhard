@@ -32,7 +32,8 @@ import ContentPages, {
 import {
   normalizePageRoute,
   notFoundRoute,
-  pageMetadata,
+  getPageMetadata,
+  isBlogPostRoute,
   pageRoutes,
   type AppRoute,
   type PageRoute,
@@ -105,6 +106,17 @@ const heroSlides = [
     action: "Fale connosco",
     href: "/contactos/",
   },
+];
+
+const clientLogos = [
+  { name: "NP Gandour Angola", image: "/NP_Gandoor.png" },
+  { name: "Refriango", image: "/refriango.jpg" },
+  { name: "Chef's Borges", image: "/Chefes-borges.jpg" },
+  { name: "Restaurante Ceano", image: "/ceano.jpg" },
+  { name: "Royal", image: "/Royal.jpeg", imageClass: "client-logo-image-royal" },
+  { name: "Torinho Eventos", image: "/ju-torinho.jpeg" },
+  { name: "Delicate Angola", image: "/delicate.jpeg" },
+  { name: "Restaurante Moquecas", image: "/moquecas.jpg" },
 ];
 
 function App({ initialPath }: { initialPath?: string } = {}) {
@@ -191,11 +203,12 @@ function App({ initialPath }: { initialPath?: string } = {}) {
   }, []);
 
   useEffect(() => {
-    document.title = pageMetadata[pathname].title;
+    const metadata = getPageMetadata(pathname);
+    document.title = metadata.title;
     const description = document.querySelector<HTMLMetaElement>(
       'meta[name="description"]',
     );
-    if (description) description.content = pageMetadata[pathname].description;
+    if (description) description.content = metadata.description;
     const robots = document.querySelector<HTMLMetaElement>(
       'meta[name="robots"]',
     );
@@ -248,14 +261,21 @@ function App({ initialPath }: { initialPath?: string } = {}) {
     }
 
     const destinationPath = destination.pathname.replace(/\/+$/, "") || "/";
-    if (!pageRoutes.includes(destinationPath as PageRoute)) return;
+    if (!pageRoutes.includes(destinationPath as PageRoute) && !isBlogPostRoute(destinationPath)) return;
     const nextPath = normalizePageRoute(destinationPath);
 
     event.preventDefault();
     const urlPath =
       nextPath === "/" ? "/" : `${nextPath}/${destination.search}${destination.hash}`;
     window.history.pushState({}, "", urlPath);
-    setPathname(nextPath);
+    const viewTransitionDocument = document as Document & {
+      startViewTransition?: (callback: () => void) => unknown;
+    };
+    if (viewTransitionDocument.startViewTransition) {
+      viewTransitionDocument.startViewTransition(() => setPathname(nextPath));
+    } else {
+      setPathname(nextPath);
+    }
     setMenuOpen(false);
 
     if (destination.hash) {
@@ -440,7 +460,7 @@ function App({ initialPath }: { initialPath?: string } = {}) {
             </ul>
             <Button asChild className="brand-button nav-cta" size="sm">
               <a href="/contactos/" onClick={closeMenu}>
-                Fale connosco <ArrowUpRight aria-hidden="true" size={16} />
+                Pedir orçamento <ArrowUpRight aria-hidden="true" size={16} />
               </a>
             </Button>
           </div>
@@ -633,6 +653,46 @@ function App({ initialPath }: { initialPath?: string } = {}) {
             <span>Estratégia digital</span>
             <span aria-hidden="true" />
             <span>Ideias que avançam</span>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="clients-title"
+          className="clients-section"
+        >
+          <div className="page-shell clients-heading" data-reveal>
+            <p className="section-kicker">CLIENTES / PARCERIAS</p>
+            <h2 className="section-heading" id="clients-title">
+              Marcas que confiam <span>no nosso trabalho.</span>
+            </h2>
+          </div>
+          <div
+            aria-label="Logótipos dos clientes e parceiros da Softhard"
+            className="client-marquee"
+            role="region"
+            tabIndex={0}
+          >
+            <div className="client-logo-track">
+              {[false, true].map((isDuplicate) => (
+                <ul
+                  aria-hidden={isDuplicate}
+                  className={`client-logo-group${isDuplicate ? " client-logo-group-duplicate" : ""}`}
+                  key={isDuplicate ? "duplicate" : "original"}
+                >
+                  {clientLogos.map((logo) => (
+                    <li className="client-logo-card" key={logo.name}>
+                      <img
+                        alt={isDuplicate ? "" : logo.name}
+                        className={`client-logo-image${logo.imageClass ? ` ${logo.imageClass}` : ""}`}
+                        decoding="async"
+                        loading="lazy"
+                        src={logo.image}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
           </div>
         </section>
 

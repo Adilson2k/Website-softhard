@@ -1,5 +1,5 @@
 ﻿import React, { useState } from "react";
-import { LogOut, ShieldAlert } from "lucide-react";
+import { LogOut, Settings, ShieldAlert } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
@@ -7,11 +7,12 @@ import BlogManager from "./components/BlogManager";
 import LeadsManager from "./components/LeadsManager";
 import Editor from "./components/Editor";
 import Login from "./components/Login";
+import AdminSettings from "./components/AdminSettings";
 import { View } from "./types";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "./lib/hooks";
 
-const ENABLED_VIEWS: View[] = ["dashboard", "blog", "leads", "editor"];
+const ENABLED_VIEWS: View[] = ["dashboard", "blog", "leads", "editor", "settings"];
 
 function isEnabledView(view: View) {
   return ENABLED_VIEWS.includes(view);
@@ -21,6 +22,7 @@ export default function App() {
   const { user, role, canAccessCms, loading: authLoading, logout } = useAuth();
   const [currentView, setCurrentView] = useState<View>("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [editingPostId, setEditingPostId] = useState<string | undefined>(undefined);
 
   const handleEditPost = (postId?: string) => {
@@ -34,6 +36,7 @@ export default function App() {
       return;
     }
     if (nextView === "leads" && role !== "admin") return;
+    if (nextView === "settings" && role !== "admin") return;
     setCurrentView(nextView);
   };
 
@@ -65,6 +68,8 @@ export default function App() {
             onSave={() => setCurrentView("dashboard")}
           />
         );
+      case "settings":
+        return role === "admin" ? <AdminSettings /> : <Dashboard onNewPost={() => handleEditPost()} onViewToBlog={() => setCurrentView("blog")} />;
       default:
         return <Dashboard onNewPost={() => handleEditPost()} onViewToBlog={() => setCurrentView("blog")} />;
     }
@@ -119,6 +124,7 @@ export default function App() {
         onViewChange={handleViewChange}
         isOpen={false}
         setIsOpen={setIsSidebarOpen}
+        onProfileClick={() => setIsProfileMenuOpen(true)}
         onLogout={logout}
         user={user}
         isAdmin={role === 'admin'}
@@ -136,18 +142,36 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {user?.photoURL ? (
-              <img src={user.photoURL} alt={user.displayName || user.email || "Perfil"} title={user.displayName || user.email || "Perfil"} className="h-9 w-9 rounded-full border border-zinc-200 object-cover" />
-            ) : (
-              <div title={user?.displayName || user?.email || "Perfil"} className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-sm font-semibold text-[var(--cms-red)]">
-                {(user?.displayName || user?.email || "U").split(/[ @]/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}
-              </div>
-            )}
-            <button onClick={logout} aria-label="Terminar sessão" title="Terminar sessão" className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-red-50 hover:text-[var(--cms-red)]">
+            <button type="button" onClick={() => setIsProfileMenuOpen((open) => !open)} aria-label="Abrir perfil e configurações" aria-haspopup="dialog" aria-expanded={isProfileMenuOpen} className="rounded-full outline-none ring-offset-2 transition hover:ring-2 hover:ring-red-200 focus-visible:ring-2 focus-visible:ring-[var(--cms-red)] lg:hidden">
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt={user.displayName || user.email || "Perfil"} className="h-9 w-9 rounded-full border border-zinc-200 object-cover" />
+              ) : (
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-sm font-semibold text-[var(--cms-red)]">
+                  {(user?.displayName || user?.email || "U").split(/[ @]/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}
+                </span>
+              )}
+            </button>
+            <button onClick={logout} aria-label="Terminar sessão" title="Terminar sessão" className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-red-50 hover:text-[var(--cms-red)] lg:hidden">
               <LogOut size={18} />
             </button>
           </div>
         </header>
+
+        <AnimatePresence>
+          {isProfileMenuOpen && (
+            <>
+              <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} type="button" aria-label="Fechar menu do perfil" onClick={() => setIsProfileMenuOpen(false)} className="fixed inset-0 z-40 cursor-default bg-black/5" />
+              <motion.section role="dialog" aria-modal="true" aria-label="Menu do perfil" initial={{ opacity: 0, y: -6, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }} className="fixed bottom-[5.5rem] left-3 z-50 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl shadow-zinc-900/10 sm:bottom-auto sm:left-auto sm:right-4 sm:top-[4.5rem] lg:bottom-24 lg:left-4 lg:right-auto lg:top-auto">
+                <div className="flex items-center gap-3 border-b border-zinc-100 p-4">
+                  {user.photoURL ? <img src={user.photoURL} alt="" className="h-11 w-11 rounded-full border border-zinc-200 object-cover" /> : <span className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 font-semibold text-[var(--cms-red)]">{(user.displayName || user.email || "U").slice(0, 1).toUpperCase()}</span>}
+                  <div className="min-w-0"><p className="truncate text-sm font-semibold text-zinc-900">{user.displayName || user.email}</p><p className="truncate text-xs text-zinc-500">{user.email}</p></div>
+                </div>
+                {role === "admin" && <button type="button" onClick={() => { setIsProfileMenuOpen(false); setCurrentView("settings"); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 hover:text-[var(--cms-red)]"><Settings size={17} /><span>Configurações</span></button>}
+                <div className="border-t border-zinc-100 px-4 py-2 text-[11px] text-zinc-400">{role === "admin" ? "Administrador" : "Editor"} · Softhard CMS</div>
+              </motion.section>
+            </>
+          )}
+        </AnimatePresence>
 
         <div className="flex-1 overflow-x-hidden px-4 py-5 pb-24 md:p-8 lg:pb-8">
           <AnimatePresence mode="wait">

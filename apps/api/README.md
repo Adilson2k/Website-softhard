@@ -11,7 +11,7 @@ npm install
 npm run dev --workspace=api
 ```
 
-The web app defaults to `/api`; the Vite development proxy forwards these requests to `http://localhost:3001`. Set `VITE_API_URL` in `apps/web/.env.local` only when using a different API address. `CORS_ORIGIN` accepts a comma-separated allowlist. Set `TRUST_PROXY=true` only when the API is behind a trusted reverse proxy so rate limits use the client IP. Vercel sets `VERCEL=1`, which enables the proxy trust and is used to serve the CMS under `/cms`.
+The web app defaults to `/api`; the Vite development proxy forwards these requests to `http://localhost:3001`. Set `VITE_API_URL` in `apps/web/.env.local` only when using a different API base URL, ending in `/api` (for example, `http://localhost:3001/api`). `CORS_ORIGIN` accepts a comma-separated allowlist. Set `TRUST_PROXY=true` only when the API is behind a trusted reverse proxy so rate limits use the client IP. Vercel sets `VERCEL=1`, which enables the proxy trust and is used to serve the CMS under `/cms`.
 
 ## Routes
 
@@ -29,6 +29,8 @@ The web app defaults to `/api`; the Vite development proxy forwards these reques
 | GET | `/api/admin/leads` | Firebase admin | List leads; optional `status` and `limit` |
 | GET | `/api/admin/leads/:id` | Firebase admin | Read a lead and its activity |
 | PATCH | `/api/admin/leads/:id` | Firebase admin | Update status, assignee, next step, follow-up date, or add a note |
+| GET | `/api/admin/users` | Firebase admin | List CMS accounts with their roles |
+| POST | `/api/admin/users` | Firebase admin | Create an email/password CMS account and assign its admin/editor role |
 | POST | `/api/blob/upload?category=blog\|content\|temp` | Firebase admin/editor | Upload an image to Vercel Blob (10 MB maximum) |
 | DELETE | `/api/blob/delete` | Firebase admin/editor | Delete a public Vercel Blob image |
 

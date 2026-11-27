@@ -61,12 +61,27 @@ export default function Dashboard({ onNewPost, onViewToBlog }: { onNewPost: () =
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-1">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 tracking-tight italic serif font-serif">Dashboard</h1>
           <p className="text-zinc-500 text-sm mt-1">Bem-vindo de volta, {displayName}. Aqui está o que aconteceu hoje.</p>
         </div>
-      </div>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+          <button
+            onClick={onViewToBlog}
+            className="rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+          >
+            Ver todos os artigos
+          </button>
+          <button
+            onClick={onNewPost}
+            className="cms-primary flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium shadow-lg shadow-red-100 transition-all active:scale-95"
+          >
+            <Plus size={18} />
+            <span>Novo artigo</span>
+          </button>
+        </div>
+      </header>
 
       {/* Error State */}
       {postsError && (
@@ -165,21 +180,6 @@ export default function Dashboard({ onNewPost, onViewToBlog }: { onNewPost: () =
         </div> */}
       </div>
 
-      <div className="flex flex-col-reverse gap-3 border-t border-zinc-200 pt-5 sm:flex-row sm:justify-end">
-        <button
-          onClick={onViewToBlog}
-          className="rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
-        >
-          Ver todos os artigos
-        </button>
-        <button
-          onClick={onNewPost}
-          className="cms-primary flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 font-medium shadow-lg shadow-red-100 transition-all active:scale-95"
-        >
-          <Plus size={18} />
-          <span>Novo artigo</span>
-        </button>
-      </div>
     </div>
   );
 }

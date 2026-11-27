@@ -6,6 +6,7 @@ import { blobRouter } from "./blob.js";
 import { adminLeadsRouter, publicLeadsRouter } from "./leads.js";
 import { adminPostsRouter, publicPostsRouter } from "./posts.js";
 import { sessionRouter } from "./session.js";
+import { adminUsersRouter } from "./users.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
@@ -64,6 +65,7 @@ app.use("/api/auth", sessionRouter);
 app.use("/api/admin/posts", adminPostsRouter);
 app.use("/api/leads", leadSubmissionLimit, publicLeadsRouter);
 app.use("/api/admin/leads", adminLeadsRouter);
+app.use("/api/admin/users", adminUsersRouter);
 
 app.use((_request, response) => {
   response.status(404).json({ error: "NOT_FOUND", message: "Route not found." });

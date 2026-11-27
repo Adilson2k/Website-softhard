@@ -1,0 +1,24 @@
+Assunto: Relatório de actividades – Website Softhard (24/11/2026)
+
+Prezados,
+
+Partilho o resumo das actividades realizadas no dia 24 de Novembro de 2026 no website institucional da Softhard.
+
+O que foi feito
+- O website foi publicado na plataforma Vercel e está disponível online.
+- Foi testada a responsividade, verificando a adaptação dos conteúdos e da navegação a diferentes dimensões de ecrã.
+
+Website: https://website-softhard.vercel.app/
+
+Pontos pendentes
+- Actualizar a lista de clientes, assim que recebermos as informações mais recentes.
+- Integrar as fotografias e os vídeos oficiais da empresa nos banners, no corpo do website, no portfólio e no blogue. Ainda não recebi esses materiais.
+- Após a recepção dos conteúdos, rever a apresentação das respectivas secções para garantir que representam correctamente a Softhard.
+
+A publicação do website está concluída. A actualização da lista de clientes e a integração dos materiais visuais poderão avançar assim que forem disponibilizados.
+
+Fico disponível para dar seguimento a estes pontos quando receber os conteúdos.
+
+Com os melhores cumprimentos,
+Adilson Soares
+Programador Fullstack

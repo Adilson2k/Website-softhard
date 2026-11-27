@@ -32,8 +32,8 @@ export default function LeadsManager() {
   const active = leads.filter((lead) => ["contacted", "qualified", "proposal"].includes(lead.status)).length;
   return <section className="space-y-6">
     <header className="flex items-end justify-between gap-4"><div><p className="text-xs uppercase tracking-widest text-zinc-400">Comercial</p><h1 className="text-2xl font-bold">Funil de pedidos</h1><p className="mt-1 text-sm text-zinc-500">Contactos recebidos através do site.</p></div><button onClick={() => void refresh()} className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm"><RefreshCw size={15} />Actualizar</button></header>
-    <div className="grid grid-cols-2 gap-3">
-      <div className="col-span-2 rounded-xl border border-zinc-200 bg-white p-4"><p className="text-xs text-zinc-500">Pedidos</p><p className="mt-1 text-2xl font-bold">{leads.length}</p></div>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="rounded-xl border border-zinc-200 bg-white p-4"><p className="text-xs text-zinc-500">Pedidos</p><p className="mt-1 text-2xl font-bold">{leads.length}</p></div>
       <div className="rounded-xl border border-zinc-200 bg-white p-4"><p className="text-xs text-zinc-500">Novos</p><p className="mt-1 text-2xl font-bold">{fresh}</p></div>
       <div className="rounded-xl border border-zinc-200 bg-white p-4"><p className="text-xs text-zinc-500">Em acompanhamento</p><p className="mt-1 text-2xl font-bold">{active}</p></div>
     </div>

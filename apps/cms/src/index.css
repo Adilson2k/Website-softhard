@@ -34,9 +34,9 @@
 }
 
 .cms-nav-active {
-  background-color: var(--cms-red) !important;
+  background: linear-gradient(105deg, var(--cms-red), color-mix(in oklch, var(--cms-red) 82%, var(--cms-orange))) !important;
   color: white !important;
-  box-shadow: 0 8px 18px color-mix(in oklch, var(--cms-red) 18%, transparent) !important;
+  box-shadow: 0 7px 16px color-mix(in oklch, var(--cms-red) 20%, transparent), inset 0 1px 0 rgb(255 255 255 / 16%) !important;
 }
 
 .cms-logo {

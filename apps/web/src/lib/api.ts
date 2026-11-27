@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "/api";
+const configuredApiUrl = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
+const API_BASE_URL = /\/api$/i.test(configuredApiUrl) ? configuredApiUrl : `${configuredApiUrl}/api`;
 
 export type PublicPost = {
   id: string;
@@ -38,7 +39,7 @@ async function responseError(response: Response, fallback: string): Promise<Erro
 }
 
 export async function getApiHealth(signal?: AbortSignal) {
-  const response = await fetch(`${API_URL}/api/health`, { signal });
+  const response = await fetch(`${API_BASE_URL}/health`, { signal });
 
   if (!response.ok) {
     throw new Error(`API health check failed: ${response.status}`);
@@ -58,7 +59,7 @@ export async function getApiHealth(signal?: AbortSignal) {
 }
 
 export async function getPublicPosts(signal?: AbortSignal): Promise<PublicPost[]> {
-  const response = await fetch(`${API_URL}/api/posts`, { signal });
+  const response = await fetch(`${API_BASE_URL}/posts`, { signal });
   if (!response.ok) throw await responseError(response, "Could not load the news.");
   const data: unknown = await response.json();
   if (typeof data !== "object" || data === null || !("items" in data) || !Array.isArray(data.items)) {
@@ -74,8 +75,18 @@ export async function getPublicPosts(signal?: AbortSignal): Promise<PublicPost[]
   );
 }
 
+export async function getPublicPost(slug: string, signal?: AbortSignal): Promise<PublicPost> {
+  const response = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(slug)}`, { signal });
+  if (!response.ok) throw await responseError(response, "Could not load this article.");
+  const data: unknown = await response.json();
+  if (typeof data !== "object" || data === null || !("id" in data) || typeof data.id !== "string" || !("slug" in data) || typeof data.slug !== "string" || !("title" in data) || typeof data.title !== "string" || !("content" in data) || typeof data.content !== "string") {
+    throw new Error("The API returned an invalid article response.");
+  }
+  return data as PublicPost;
+}
+
 export async function submitLead(payload: LeadSubmission): Promise<void> {
-  const response = await fetch(`${API_URL}/api/leads`, {
+  const response = await fetch(`${API_BASE_URL}/leads`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

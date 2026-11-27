@@ -22,14 +22,65 @@ import {
   type PointerEvent,
   type ReactNode,
 } from "react";
-import type { PageRoute } from "./routes";
-import { getPublicPosts, submitLead } from "./lib/api";
+import { isBlogPostRoute, type AppRoute, type PageRoute } from "./routes";
+import { getPublicPost, getPublicPosts, submitLead, type PublicPost } from "./lib/api";
 
-export const portfolioItems = [
+type PortfolioFormat = "projects-campaigns" | "event-coverage" | "audiovisual-production" | "digital-communication";
+
+type PortfolioItem = {
+  slug: string;
+  title: string;
+  category: string;
+  format: PortfolioFormat;
+  image: string;
+  alt: string;
+  summary: string;
+  story: string;
+  focusItems: string[];
+  videoUrl?: string;
+  gallery?: { src: string; alt: string }[];
+  client?: string;
+  objective?: string;
+  concept?: string;
+  execution?: string;
+  results?: string;
+  eventDate?: string;
+  location?: string;
+};
+
+export const portfolioCategories: { id: PortfolioFormat; number: string; title: string; description: string }[] = [
+  {
+    id: "projects-campaigns",
+    number: "01",
+    title: "Projectos e campanhas",
+    description: "Trabalhos para clientes com objectivos, conceito criativo, execução e resultados disponíveis.",
+  },
+  {
+    id: "event-coverage",
+    number: "02",
+    title: "Cobertura de eventos",
+    description: "Aftermovies, entrevistas, reels, bastidores e fotografias que registam a experiência.",
+  },
+  {
+    id: "audiovisual-production",
+    number: "03",
+    title: "Produção audiovisual",
+    description: "Vídeos institucionais, spots publicitários, videoclipes e conteúdos de campanha.",
+  },
+  {
+    id: "digital-communication",
+    number: "04",
+    title: "Comunicação digital",
+    description: "Campanhas para redes sociais, calendários editoriais e gestão da presença digital.",
+  },
+];
+
+export const portfolioItems: PortfolioItem[] = [
   {
     slug: "acqua-eta",
     title: "Acqua ETA",
     category: "Projecto em destaque",
+    format: "projects-campaigns",
     image: "/acqua-eta.jpg",
     alt: "Equipa de profissionais junto à instalação da ETA Sudeste",
     summary:
@@ -42,6 +93,7 @@ export const portfolioItems = [
     slug: "visita-de-campo",
     title: "Visita de campo",
     category: "Tecnologia no terreno",
+    format: "projects-campaigns",
     image: "/softhard-field.jpg",
     alt: "Profissionais numa visita de campo a uma instalação industrial",
     summary:
@@ -54,6 +106,7 @@ export const portfolioItems = [
     slug: "corrida-odebrecht",
     title: "Corrida Odebrecht",
     category: "Evento",
+    format: "event-coverage",
     image: "/odebrecht-corrida.jpg",
     alt: "Participantes junto ao arco de partida da corrida Odebrecht",
     summary:
@@ -140,12 +193,14 @@ export const serviceItems = [
 
 type BlogArticle = {
   id?: string;
+  slug?: string;
   category: string;
   title: string;
   excerpt: string;
   image: string;
   imageAlt: string;
   mediaUrl?: string;
+  author?: string;
   publishedAt?: string | null;
   images?: { src: string; alt: string }[];
   paragraphs: string[];
@@ -153,6 +208,7 @@ type BlogArticle = {
 
 const blogPosts: BlogArticle[] = [
   {
+    slug: "estrategia-digital-antes-dos-canais",
     category: "Estratégia digital",
     title: "A estratégia digital começa antes da escolha dos canais",
     excerpt:
@@ -166,6 +222,7 @@ const blogPosts: BlogArticle[] = [
     ],
   },
   {
+    slug: "comunicacao-consistente-constroi-confianca",
     category: "Marketing corporativo",
     title: "Comunicação consistente constrói confiança",
     excerpt:
@@ -178,6 +235,7 @@ const blogPosts: BlogArticle[] = [
     ],
   },
   {
+    slug: "experiencia-de-marca-para-la-do-evento",
     category: "Experiências",
     title: "Uma experiência de marca prolonga-se para lá do evento",
     excerpt:
@@ -318,11 +376,11 @@ export function LeadCaptureForm() {
           />
         </label>
         <label>
-          Organização
+          Organização (opcional)
           <input autoComplete="organization" name="organization" />
         </label>
         <label>
-          Telefone
+          Telefone (opcional)
           <input autoComplete="tel" name="phone" type="tel" />
         </label>
         <label className="lead-form-wide">
@@ -680,8 +738,19 @@ function PortfolioPage() {
     pointerId: -1,
     startX: 0,
     startScrollLeft: 0,
+    moved: false,
   });
+  const suppressPortfolioClickRef = useRef(false);
   const [portfolioIndex, setPortfolioIndex] = useState(0);
+  const [activePortfolioFormat, setActivePortfolioFormat] = useState<PortfolioFormat | "all">("all");
+  const visiblePortfolioItems = activePortfolioFormat === "all"
+    ? portfolioItems
+    : portfolioItems.filter((item) => item.format === activePortfolioFormat);
+
+  useEffect(() => {
+    setPortfolioIndex(0);
+    portfolioTrackRef.current?.scrollTo({ left: 0 });
+  }, [activePortfolioFormat]);
 
   function updatePortfolioIndex() {
     const track = portfolioTrackRef.current;
@@ -720,6 +789,7 @@ function PortfolioPage() {
       pointerId: event.pointerId,
       startX: event.clientX,
       startScrollLeft: track.scrollLeft,
+      moved: false,
     };
     track.classList.add("is-dragging");
     track.setPointerCapture(event.pointerId);
@@ -729,6 +799,8 @@ function PortfolioPage() {
     const drag = dragRef.current;
     if (drag.pointerId !== event.pointerId) return;
 
+    if (Math.abs(event.clientX - drag.startX) > 6) drag.moved = true;
+
     event.currentTarget.scrollLeft =
       drag.startScrollLeft - (event.clientX - drag.startX);
   }
@@ -737,11 +809,24 @@ function PortfolioPage() {
     const track = event.currentTarget;
     if (dragRef.current.pointerId !== event.pointerId) return;
 
+    if (dragRef.current.moved) {
+      suppressPortfolioClickRef.current = true;
+      window.setTimeout(() => {
+        suppressPortfolioClickRef.current = false;
+      }, 0);
+    }
     dragRef.current.pointerId = -1;
     track.classList.remove("is-dragging");
     if (track.hasPointerCapture(event.pointerId)) {
       track.releasePointerCapture(event.pointerId);
     }
+  }
+
+  function handlePortfolioClickCapture(event: React.MouseEvent<HTMLDivElement>) {
+    if (!suppressPortfolioClickRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressPortfolioClickRef.current = false;
   }
 
   function handlePortfolioKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -750,7 +835,7 @@ function PortfolioPage() {
       scrollToPortfolioItem(portfolioIndex - 1);
     } else if (
       event.key === "ArrowRight" &&
-      portfolioIndex < portfolioItems.length - 1
+      portfolioIndex < visiblePortfolioItems.length - 1
     ) {
       event.preventDefault();
       scrollToPortfolioItem(portfolioIndex + 1);
@@ -763,19 +848,19 @@ function PortfolioPage() {
         eyebrow="Portfólio"
         title="Experiências que"
         highlight="aproximam pessoas."
-        description="Cada projecto é uma oportunidade para transformar estratégia em experiências memoráveis para marcas e comunidades."
+        description="Projectos e campanhas, cobertura de eventos, produção audiovisual e comunicação digital — apresentados com contexto e imagem em movimento."
       />
       <section className="portfolio-page-section">
         <div className="page-shell portfolio-page-heading" data-reveal>
           <div>
             <p className="section-kicker">
-              <span>01</span> / EXPERI?NCIAS EM DESTAQUE
+              <span>01</span> / TRABALHOS EM DESTAQUE
             </p>
             <h2 className="section-heading">
-              Ideias que ganham <span>vida.</span>
+              Do conceito à <span>experiência.</span>
             </h2>
             <p className="section-intro">
-              Percorra alguns trabalhos e momentos do universo Softhard.
+              Projectos, campanhas e coberturas apresentados com contexto e formatos audiovisuais.
             </p>
           </div>
           <p className="portfolio-page-hint">
@@ -783,10 +868,33 @@ function PortfolioPage() {
             Arraste para explorar
           </p>
         </div>
+        <div className="page-shell portfolio-format-grid" aria-label="Áreas do portfólio">
+          {portfolioCategories.map((category) => {
+            const itemCount = portfolioItems.filter((item) => item.format === category.id).length;
+            return (
+              <button
+                aria-pressed={activePortfolioFormat === category.id}
+                className={`portfolio-format-card${activePortfolioFormat === category.id ? " is-active" : ""}`}
+                key={category.id}
+                onClick={() => setActivePortfolioFormat(category.id)}
+                type="button"
+              >
+                <span className="portfolio-format-number">{category.number} / PORTFÓLIO</span>
+                <h3>{category.title}</h3>
+                <p>{category.description}</p>
+                <span className="portfolio-format-count">{itemCount ? `${itemCount} ${itemCount === 1 ? "registo" : "registos"}` : "Conteúdo em preparação"}<ArrowUpRight aria-hidden="true" size={15} /></span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="page-shell portfolio-format-filter" aria-label="Filtrar trabalhos por formato" role="group">
+          <button aria-pressed={activePortfolioFormat === "all"} className={activePortfolioFormat === "all" ? "is-active" : ""} onClick={() => setActivePortfolioFormat("all")} type="button">Todos os trabalhos</button>
+          {portfolioCategories.map((category) => <button aria-pressed={activePortfolioFormat === category.id} className={activePortfolioFormat === category.id ? "is-active" : ""} key={category.id} onClick={() => setActivePortfolioFormat(category.id)} type="button">{category.title}</button>)}
+        </div>
         <div className="page-shell portfolio-page-controls">
           <p aria-live="polite" className="portfolio-page-count">
-            {String(portfolioIndex + 1).padStart(2, "0")} /{" "}
-            {String(portfolioItems.length).padStart(2, "0")}
+            {visiblePortfolioItems.length ? String(portfolioIndex + 1).padStart(2, "0") : "00"} /{" "}
+            {String(visiblePortfolioItems.length).padStart(2, "0")}
           </p>
           <div className="portfolio-page-arrows">
             <button
@@ -799,7 +907,7 @@ function PortfolioPage() {
             </button>
             <button
               aria-label="Próximo trabalho"
-              disabled={portfolioIndex === portfolioItems.length - 1}
+              disabled={portfolioIndex >= visiblePortfolioItems.length - 1}
               onClick={() => scrollToPortfolioItem(portfolioIndex + 1)}
               type="button"
             >
@@ -811,6 +919,7 @@ function PortfolioPage() {
           aria-label="Portfólio Softhard. Use as setas do teclado ou arraste para percorrer."
           className="portfolio-page-track"
           onKeyDown={handlePortfolioKeyDown}
+          onClickCapture={handlePortfolioClickCapture}
           onPointerCancel={handlePortfolioPointerUp}
           onPointerDown={handlePortfolioPointerDown}
           onPointerMove={handlePortfolioPointerMove}
@@ -821,24 +930,32 @@ function PortfolioPage() {
           role="region"
           tabIndex={0}
         >
-          {portfolioItems.map((item, index) => (
+          {visiblePortfolioItems.map((item, index) => (
             <article
               className="portfolio-page-card"
               data-portfolio-page-card
               key={item.title}
             >
               <figure>
-                <div className="portfolio-page-image">
-                  <img
-                    alt={item.alt}
-                    decoding="async"
-                    loading={index === 0 ? "eager" : "lazy"}
-                    src={item.image}
-                  />
-                  <span className="portfolio-page-image-index">
-                    0{index + 1}
-                  </span>
-                </div>
+                <a
+                  aria-label={`Abrir projecto ${item.title}`}
+                  className="portfolio-page-image-link"
+                  href={`/portfolio/${item.slug}/`}
+                >
+                  <div className="portfolio-page-image">
+                    <img
+                      alt={item.alt}
+                      decoding="async"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      src={item.image}
+                      style={{ viewTransitionName: `portfolio-${item.slug}` }}
+                    />
+                    {item.format === "event-coverage" && <span className="portfolio-media-pending"><Play aria-hidden="true" size={12} fill="currentColor" /> Cobertura audiovisual</span>}
+                    <span className="portfolio-page-image-index">
+                      0{index + 1}
+                    </span>
+                  </div>
+                </a>
                 <figcaption className="portfolio-page-caption">
                   <div>
                     <p className="section-kicker">{item.category}</p>
@@ -853,7 +970,7 @@ function PortfolioPage() {
                   </div>
                   <span>
                     {String(index + 1).padStart(2, "0")} /{" "}
-                    {String(portfolioItems.length).padStart(2, "0")}
+                    {String(visiblePortfolioItems.length).padStart(2, "0")}
                   </span>
                 </figcaption>
               </figure>
@@ -864,7 +981,7 @@ function PortfolioPage() {
           aria-label="Escolher trabalho"
           className="page-shell portfolio-page-pagination"
         >
-          {portfolioItems.map((item, index) => (
+          {visiblePortfolioItems.map((item, index) => (
             <button
               aria-label={`Ver ${item.title}`}
               aria-pressed={portfolioIndex === index}
@@ -875,6 +992,7 @@ function PortfolioPage() {
             />
           ))}
         </div>
+        {!visiblePortfolioItems.length && <div className="page-shell portfolio-empty-state"><span>SOFTHARD / PORTFÓLIO</span><h3>Estamos a preparar os trabalhos desta área.</h3><p>Em breve, esta selecção poderá incluir os materiais, formatos e contexto de cada projecto.</p></div>}
       </section>
       <section className="border-y border-line bg-white py-16 sm:py-20">
         <div className="page-shell" data-reveal>
@@ -909,6 +1027,12 @@ function ProjectDetailPage({ route }: { route: PageRoute }) {
   const projectNumber = String(
     portfolioItems.findIndex((item) => item.slug === project.slug) + 1,
   ).padStart(2, "0");
+  const caseStudyDetails = [
+    { label: "Objectivo", value: project.objective },
+    { label: "Conceito criativo", value: project.concept },
+    { label: "Execução", value: project.execution },
+    { label: "Resultados", value: project.results },
+  ].filter((detail): detail is { label: string; value: string } => Boolean(detail.value));
 
   return (
     <article className="project-detail-page">
@@ -921,6 +1045,7 @@ function ProjectDetailPage({ route }: { route: PageRoute }) {
           decoding="async"
           fetchPriority="high"
           src={project.image}
+          style={{ viewTransitionName: `portfolio-${project.slug}` }}
         />
         <div aria-hidden="true" className="project-detail-shade" />
         <div className="page-shell project-detail-heading" data-reveal>
@@ -940,6 +1065,27 @@ function ProjectDetailPage({ route }: { route: PageRoute }) {
           PROJECTO {projectNumber}
         </span>
       </section>
+      {(project.videoUrl || project.format === "event-coverage") && (
+        <section className="page-shell project-detail-av-section" aria-label="Cobertura audiovisual">
+          <div className="project-detail-av-heading">
+            <p className="section-kicker">COBERTURA AUDIOVISUAL</p>
+            <h2>{project.videoUrl ? "Veja a experiência em movimento." : "Os momentos também merecem ser vistos."}</h2>
+            {project.eventDate && <span>{project.eventDate}</span>}
+            {project.location && <span>{project.location}</span>}
+          </div>
+          {project.videoUrl ? (
+            <BlogVideo title={project.title} url={project.videoUrl} />
+          ) : (
+            <div className="project-video-placeholder">
+              <Play aria-hidden="true" size={26} fill="currentColor" />
+              <div><strong>Vídeo do evento em preparação</strong><span>O aftermovie e restantes materiais serão publicados após validação.</span></div>
+            </div>
+          )}
+          <div className="project-media-types">
+            {["Aftermovie", "Entrevistas", "Reels", "Bastidores", "Fotografias"].map((format) => <span key={format}>{format}</span>)}
+          </div>
+        </section>
+      )}
       <section
         aria-labelledby="project-detail-story-title"
         className="page-shell project-detail-content"
@@ -965,6 +1111,19 @@ function ProjectDetailPage({ route }: { route: PageRoute }) {
           </div>
         </div>
       </section>
+      {caseStudyDetails.length > 0 && (
+        <section className="page-shell project-case-study">
+          <p className="section-kicker">PROJECTO / CONTEXTO</p>
+          <div className="project-case-study-grid">
+            {caseStudyDetails.map(({ label, value }) => <article key={label}><h3>{label}</h3><p>{value}</p></article>)}
+          </div>
+        </section>
+      )}
+      {project.gallery && project.gallery.length > 0 && (
+        <section className="page-shell project-detail-gallery" aria-label="Galeria do projecto">
+          {project.gallery.map((media) => <figure key={media.src}><img src={media.src} alt={media.alt} loading="lazy" decoding="async" /></figure>)}
+        </section>
+      )}
       <section className="inner-band">
         <div className="page-shell inner-band-layout" data-reveal>
           <h2>Quer criar uma experiência para a sua marca?</h2>
@@ -1022,23 +1181,54 @@ function BlogVideo({ url, title }: { url: string; title: string }) {
   );
 }
 
+function articleFromApi(post: PublicPost): BlogArticle {
+  const parsed = new DOMParser().parseFromString(post.content, "text/html");
+  const images = Array.from(parsed.body.querySelectorAll("img[src]"))
+    .map((image) => {
+      const rawSource = image.getAttribute("src") || "";
+      try {
+        const source = new URL(rawSource, window.location.origin);
+        return (source.protocol === "https:" || source.origin === window.location.origin)
+          ? { src: source.toString(), alt: image.getAttribute("alt") || post.title }
+          : null;
+      } catch {
+        return null;
+      }
+    })
+    .filter((image): image is { src: string; alt: string } => image !== null);
+  const paragraphs = Array.from(parsed.body.querySelectorAll("p, li, h2, h3, blockquote"))
+    .map((node) => node.textContent?.trim() ?? "")
+    .filter(Boolean);
+  if (paragraphs.length === 0) {
+    paragraphs.push(...(parsed.body.textContent ?? "").split(/\n+/).map((part) => part.trim()).filter(Boolean));
+  }
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    category: post.category || "Geral",
+    excerpt: post.excerpt || paragraphs.join(" ").slice(0, 200),
+    image: post.coverImage || "/softhard-field.jpg",
+    imageAlt: post.title,
+    mediaUrl: post.mediaUrl || undefined,
+    author: post.author || "Softhard",
+    publishedAt: post.publishedAt,
+    images,
+    paragraphs,
+  };
+}
+
+function articlePath(post: BlogArticle) {
+  const slug = post.slug || post.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `/noticias/${slug}/`;
+}
+
 function ArticleReadMore({ post }: { post: BlogArticle }) {
   return (
-    <details className="blog-article-details">
-      <summary>
-        {post.mediaUrl ? "Ver reportagem" : "Ler artigo"}
-        <ArrowUpRight aria-hidden="true" size={17} />
-      </summary>
-      <div className="blog-article-body">
-        {post.mediaUrl && <BlogVideo title={post.title} url={post.mediaUrl} />}
-        {post.images?.map((image) => (
-          <figure className="blog-article-image" key={image.src}>
-            <img src={image.src} alt={image.alt || post.title} loading="lazy" decoding="async" />
-          </figure>
-        ))}
-        {post.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-      </div>
-    </details>
+    <a className="blog-article-link" href={articlePath(post)}>
+      {post.mediaUrl ? "Ver reportagem" : "Ler artigo"}
+      <ArrowUpRight aria-hidden="true" size={17} />
+    </a>
   );
 }
 
@@ -1054,40 +1244,7 @@ function NewsPage() {
     const controller = new AbortController();
     getPublicPosts(controller.signal)
       .then((remotePosts) => {
-        const articles = remotePosts.map((post): BlogArticle => {
-          const parsed = new DOMParser().parseFromString(post.content, "text/html");
-          const images = Array.from(parsed.body.querySelectorAll("img[src]"))
-            .map((image) => {
-              const rawSource = image.getAttribute("src") || "";
-              try {
-                const source = new URL(rawSource, window.location.origin);
-                return (source.protocol === "https:" || source.origin === window.location.origin)
-                  ? { src: source.toString(), alt: image.getAttribute("alt") || post.title }
-                  : null;
-              } catch {
-                return null;
-              }
-            })
-            .filter((image): image is { src: string; alt: string } => image !== null);
-          const paragraphs = Array.from(parsed.body.querySelectorAll("p, li, h2, h3, blockquote"))
-            .map((node) => node.textContent?.trim() ?? "")
-            .filter(Boolean);
-          if (paragraphs.length === 0) {
-            paragraphs.push(...(parsed.body.textContent ?? "").split(/\n+/).map((part) => part.trim()).filter(Boolean));
-          }
-          return {
-            id: post.id,
-            title: post.title,
-            category: post.category || "Geral",
-            excerpt: post.excerpt || paragraphs.join(" ").slice(0, 200),
-            image: post.coverImage || "/softhard-field.jpg",
-            imageAlt: post.title,
-            mediaUrl: post.mediaUrl || undefined,
-            publishedAt: post.publishedAt,
-            images,
-            paragraphs,
-          };
-        });
+        const articles = remotePosts.map(articleFromApi);
         const useDemoContent = import.meta.env.DEV && articles.length === 0;
         setPosts(useDemoContent ? blogPosts : articles);
         setShowingDemo(useDemoContent);
@@ -1210,6 +1367,92 @@ function NewsPage() {
     </>
   );
 }
+function BlogPostPage({ slug }: { slug: string }) {
+  const [article, setArticle] = useState<BlogArticle | null>(null);
+  const [related, setRelated] = useState<BlogArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const demoArticle = import.meta.env.DEV ? blogPosts.find((post) => post.slug === slug) : undefined;
+    if (demoArticle) {
+      setArticle(demoArticle);
+      setRelated(blogPosts.filter((post) => post.slug !== slug));
+      setLoading(false);
+      setError(false);
+      return () => controller.abort();
+    }
+
+    setLoading(true);
+    setError(false);
+    getPublicPost(slug, controller.signal)
+      .then((post) => setArticle(articleFromApi(post)))
+      .catch(() => { if (!controller.signal.aborted) { setArticle(null); setError(true); } })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    getPublicPosts(controller.signal)
+      .then((posts) => setRelated(posts.map(articleFromApi).filter((post) => post.slug !== slug)))
+      .catch(() => undefined);
+
+    return () => controller.abort();
+  }, [slug]);
+
+  useEffect(() => {
+    if (!article) return;
+    const title = `${article.title} | Blogue Softhard`;
+    const description = article.excerpt || article.paragraphs.join(" ").slice(0, 180);
+    document.title = title;
+    const descriptionMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if (descriptionMeta) descriptionMeta.content = description;
+    const ogTitle = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
+    if (ogTitle) ogTitle.content = title;
+    const ogDescription = document.querySelector<HTMLMetaElement>('meta[property="og:description"]');
+    if (ogDescription) ogDescription.content = description;
+    const ogImage = document.querySelector<HTMLMetaElement>('meta[property="og:image"]');
+    if (ogImage) ogImage.content = new URL(article.image, window.location.origin).toString();
+  }, [article]);
+
+  function formatDate(value?: string | null) {
+    if (!value) return "Blogue Softhard";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Blogue Softhard" : new Intl.DateTimeFormat("pt-AO", { day: "2-digit", month: "long", year: "numeric" }).format(date);
+  }
+
+  const readingMinutes = article ? Math.max(1, Math.ceil(article.paragraphs.join(" ").split(/\s+/).filter(Boolean).length / 190)) : 1;
+
+  return (
+    <section className="blog-detail-page">
+      <div className="page-shell blog-detail-shell">
+        <a className="blog-detail-back" href="/noticias/"><ChevronLeft aria-hidden="true" size={17} /> Voltar ao blogue</a>
+        {loading ? (
+          <p className="blog-detail-message" role="status">A carregar artigo…</p>
+        ) : !article ? (
+          <section className="blog-detail-missing"><p className="section-kicker">BLOGUE SOFTHARD</p><h1>{error ? "Este artigo não está disponível." : "Artigo não encontrado."}</h1><p>O artigo pode ter sido removido ou ainda não foi publicado.</p><a className="blog-detail-return" href="/noticias/">Explorar o blogue <ArrowUpRight aria-hidden="true" size={16} /></a></section>
+        ) : (
+          <>
+            <header className="blog-detail-heading">
+              <p className="section-kicker"><span>{article.category}</span></p>
+              <h1>{article.title}</h1>
+              <p className="blog-detail-excerpt">{article.excerpt}</p>
+              <div className="blog-detail-byline"><span>{article.author || "Softhard"}</span><i aria-hidden="true" /><span>{formatDate(article.publishedAt)}</span><i aria-hidden="true" /><span>{readingMinutes} min de leitura</span></div>
+            </header>
+            <figure className="blog-detail-cover"><img src={article.image} alt={article.imageAlt || article.title} fetchPriority="high" /></figure>
+            <div className="blog-detail-layout">
+              <article className="blog-detail-body">
+                {article.mediaUrl && <BlogVideo title={article.title} url={article.mediaUrl} />}
+                {article.paragraphs.map((paragraph, index) => <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>)}
+                {article.images?.map((image) => <figure className="blog-article-image" key={image.src}><img src={image.src} alt={image.alt || article.title} loading="lazy" decoding="async" /></figure>)}
+              </article>
+              <aside className="blog-detail-aside"><span className="section-kicker">SOFTHARD / BLOGUE</span><p>Ideias, experiências e histórias de comunicação partilhadas pela nossa equipa.</p><a href="/contactos/">Fale connosco <ArrowUpRight aria-hidden="true" size={15} /></a></aside>
+            </div>
+            {related.length > 0 && <section className="blog-related"><div className="blog-related-heading"><p className="section-kicker">CONTINUE A LER</p><h2>Mais histórias do blogue.</h2></div><div className="blog-related-grid">{related.slice(0, 3).map((post) => <a className="blog-related-card" href={articlePath(post)} key={post.slug ?? post.title}><img src={post.image} alt="" loading="lazy" /><span>{post.category}</span><h3>{post.title}</h3><ArrowUpRight aria-hidden="true" size={17} /></a>)}</div></section>}
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function CareersPage() {
   return (
     <>
@@ -1313,7 +1556,7 @@ function CareersApplicationForm() {
           />
         </label>
         <label>
-          Telefone
+          Telefone (opcional)
           <input autoComplete="tel" name="phone" type="tel" />
         </label>
         <label>
@@ -1391,12 +1634,15 @@ function ContactsPage() {
   );
 }
 
-export default function ContentPages({ route }: { route: PageRoute }) {
+export default function ContentPages({ route }: { route: AppRoute }) {
+  if (isBlogPostRoute(route)) {
+    return <BlogPostPage slug={route.slice("/noticias/".length)} />;
+  }
   if (route.startsWith("/servicos/")) {
-    return <ServiceDetailPage route={route} />;
+    return <ServiceDetailPage route={route as PageRoute} />;
   }
   if (route.startsWith("/portfolio/")) {
-    return <ProjectDetailPage route={route} />;
+    return <ProjectDetailPage route={route as PageRoute} />;
   }
 
   switch (route) {

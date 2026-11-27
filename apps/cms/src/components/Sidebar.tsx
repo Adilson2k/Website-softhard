@@ -17,6 +17,7 @@ interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   onLogout?: () => Promise<void>;
+  onProfileClick?: () => void;
   user: CmsUser | null;
   isAdmin?: boolean;
   role?: 'admin' | 'editor' | null;
@@ -28,7 +29,7 @@ const navItems = [
   { id: "leads" as View, label: "Pedidos", icon: Mail },
 ];
 
-export default function Sidebar({ currentView, onViewChange, isOpen, setIsOpen, onLogout, user, isAdmin = false, role = null }: SidebarProps) {
+export default function Sidebar({ currentView, onViewChange, isOpen, setIsOpen, onLogout, onProfileClick, user, isAdmin = false, role = null }: SidebarProps) {
   const getInitials = (name?: string | null) => {
     if (!name) return "?";
     return name
@@ -57,15 +58,15 @@ export default function Sidebar({ currentView, onViewChange, isOpen, setIsOpen, 
         }}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "group flex items-center justify-between rounded-lg transition-all duration-200",
-          isActive ? "cms-nav-active" : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+          "group flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2.5 transition-all duration-200",
+          isActive ? "cms-nav-active" : "text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900"
         )}
       >
         <div className="flex items-center gap-3">
           <Icon size={18} className={cn(isActive ? "text-white" : "text-zinc-400 group-hover:text-zinc-900")} />
           <span className="text-sm font-medium">{item.label}</span>
         </div>
-        {isActive && <ChevronRight size={14} />}
+        {isActive && <ChevronRight size={14} className="rounded-full bg-white/15 p-0.5" />}
       </button>
     );
   });
@@ -104,7 +105,8 @@ export default function Sidebar({ currentView, onViewChange, isOpen, setIsOpen, 
           </nav>
 
           <div className="hidden border-t border-zinc-100 p-4 lg:block">
-            <div className="flex items-center gap-3 px-3 py-2">
+            <div className="flex items-center gap-2 px-1 py-2">
+              <button type="button" onClick={onProfileClick} aria-label="Abrir perfil e configurações" className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-1.5 text-left transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cms-red)]">
               {user?.photoURL ? (
                 <img
                   src={user.photoURL}
@@ -120,9 +122,10 @@ export default function Sidebar({ currentView, onViewChange, isOpen, setIsOpen, 
                 <p className="text-sm font-semibold text-zinc-900 truncate">{displayName}</p>
                 <p className="text-xs text-zinc-500 truncate">{role === 'admin' ? 'Administrador' : role === 'editor' ? 'Editor' : 'Utilizador'}</p>
               </div>
+              </button>
               <button
                 onClick={onLogout}
-                className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors"
+                className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-red-50 hover:text-[var(--cms-red)]"
                 title="Sair"
               >
                 <LogOut size={16} />
@@ -142,11 +145,13 @@ export default function Sidebar({ currentView, onViewChange, isOpen, setIsOpen, 
               onClick={() => onViewChange(item.id)}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-medium transition-colors",
-                isActive ? "text-[var(--cms-red)]" : "text-zinc-500 hover:text-zinc-800"
+                "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] transition-colors",
+                isActive ? "font-semibold text-[var(--cms-red)]" : "font-medium text-zinc-500 hover:text-zinc-800"
               )}
             >
-              <Icon size={20} strokeWidth={isActive ? 2.4 : 1.8} />
+              <span className={cn("flex h-9 w-12 items-center justify-center rounded-full transition-colors", isActive && "bg-red-50")}>
+                <Icon size={20} strokeWidth={isActive ? 2.4 : 1.8} />
+              </span>
               <span>{item.label}</span>
             </button>
           );

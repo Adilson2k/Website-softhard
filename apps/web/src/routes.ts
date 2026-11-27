@@ -18,10 +18,11 @@ export const pageRoutes = [
 
 export type PageRoute = (typeof pageRoutes)[number];
 export const notFoundRoute = "/404" as const;
-export type AppRoute = PageRoute | typeof notFoundRoute;
+export type BlogPostRoute = `/noticias/${string}`;
+export type AppRoute = PageRoute | typeof notFoundRoute | BlogPostRoute;
 
 export const pageMetadata: Record<
-  AppRoute,
+  PageRoute | typeof notFoundRoute,
   { title: string; description: string }
 > = {
   "/": {
@@ -108,7 +109,21 @@ export const pageMetadata: Record<
 
 export function normalizePageRoute(pathname: string): AppRoute {
   const normalizedPath = pathname.replace(/\/+$/, "") || "/";
-  return pageRoutes.includes(normalizedPath as PageRoute)
-    ? (normalizedPath as PageRoute)
-    : notFoundRoute;
+  if (pageRoutes.includes(normalizedPath as PageRoute)) return normalizedPath as PageRoute;
+  if (isBlogPostRoute(normalizedPath)) return normalizedPath;
+  return notFoundRoute;
+}
+
+export function isBlogPostRoute(pathname: string): pathname is BlogPostRoute {
+  return /^\/noticias\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname);
+}
+
+export function getPageMetadata(route: AppRoute) {
+  if (isBlogPostRoute(route)) {
+    return {
+      title: "Artigo | Blogue Softhard",
+      description: "Leia este artigo no blogue da Softhard.",
+    };
+  }
+  return pageMetadata[route];
 }

@@ -29,6 +29,10 @@
       "destination": { "service": "cms", "path": "/:path*" }
     },
     {
+      "source": "/noticias/:slug",
+      "destination": { "service": "web", "path": "/index.html" }
+    },
+    {
       "source": "/(.*)",
       "destination": { "service": "web" }
     }

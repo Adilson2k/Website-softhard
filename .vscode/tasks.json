@@ -14,6 +14,56 @@
 				"$tsc"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Check API production variables",
+			"type": "shell",
+			"command": "vercel",
+			"args": [
+				"env",
+				"ls",
+				"production",
+				"--project",
+				"website-softhard-de88",
+				"--cwd",
+				"apps/api"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Link API Vercel project",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/c",
+				"set CI=1&&vercel link --project website-softhard-de88 --cwd apps/api"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Confirm API Vercel link",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/c",
+				"echo y|vercel link --project website-softhard-de88 --cwd apps/api"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Update Vercel CLI",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"--global",
+				"vercel@latest"
+			],
+			"isBackground": false,
+			"problemMatcher": []
 		}
 	]
 }

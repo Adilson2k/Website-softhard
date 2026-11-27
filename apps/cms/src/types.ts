@@ -1,1 +1,1 @@
-export type View = "dashboard" | "blog" | "leads" | "editor";
+export type View = "dashboard" | "blog" | "leads" | "editor" | "settings";
