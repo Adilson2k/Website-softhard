@@ -59,7 +59,7 @@ O build gera HTML pré-renderizado para a página inicial, as páginas instituci
 
 O `vercel.json` na raiz configura os três serviços do monorepo: website em `/`, CMS em `/cms` e API em `/api`. No projecto Vercel, ligue o repositório com a raiz definida para a raiz do monorepo e seleccione **Services** como Framework Preset. A funcionalidade Services está em beta e requer esta configuração do projecto.
 
-Configure as variáveis no ambiente do projecto Vercel. Para a API: `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `CMS_ADMIN_EMAILS` e `BLOB_READ_WRITE_TOKEN`. Para o CMS: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID` e `VITE_FIREBASE_APP_ID`. Não é necessário definir `VITE_API_URL` para produção: website e CMS usam a API no mesmo domínio, em `/api`.
+Configure as variáveis no ambiente do projecto Vercel. Para a API: `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `CMS_ADMIN_EMAILS` e `BLOB_READ_WRITE_TOKEN`. Para o CMS: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID` e `VITE_FIREBASE_APP_ID`. Quando o CMS for implantado como projecto próprio no domínio raiz, deixe `VITE_CMS_BASE_PATH` por configurar. Se o CMS for servido sob `/cms` junto do website, defina `VITE_CMS_BASE_PATH=/cms/`. Não é necessário definir `VITE_API_URL` para produção: website e CMS usam a API no mesmo domínio, em `/api`.
 
 Para executar localmente com o CLI do Vercel instalado e autenticado, use `vercel dev` na raiz do monorepo.
 

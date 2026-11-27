@@ -4,7 +4,7 @@ import path from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: process.env.VERCEL === "1" ? "/cms/" : "/",
+  base: process.env.VITE_CMS_BASE_PATH || "/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
